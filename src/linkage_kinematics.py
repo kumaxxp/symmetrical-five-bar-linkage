@@ -49,7 +49,7 @@ class ForwardKinematics:
         
             # エンドエフェクタ E の座標を計算
             self.E = self.X + np.array([self.e, 0])
-            
+
         except ValueError as e:
             print(f"Error: {e}")
             self.X = None
@@ -165,8 +165,6 @@ def plot_kinematics(fk):
         plt.plot([X[0], M2[0]], [X[1], M2[1]], 'g-o', label='X-M2')
     if M2 is not None and B2 is not None:
         plt.plot([M2[0], B2[0]], [M2[1], B2[1]], 'y-o', label='M2-B2')
-    if B2 is not None and X is not None:
-        plt.plot([B2[0], X[0]], [B2[1], X[1]], 'm-o', label='B2-X')
     if X is not None and E is not None:
         plt.plot([X[0], E[0]], [X[1], E[1]], 'mo-', label='X-E')
     
@@ -195,12 +193,6 @@ def plot_kinematics(fk):
         plt.text(B2[0], B2[1], 'B2', fontsize=12, ha='right')
     if E is not None:
         plt.text(E[0], E[1], 'E', fontsize=12, ha='right')
-    if X1 is not None:
-        print("X1",X1)
-        plt.text(X1[0], X1[1], 'X1', fontsize=12, ha='right')
-    if X2 is not None:
-        print("X2",X2)
-        plt.text(X2[0], X2[1], 'X2', fontsize=12, ha='right')
 
     plt.xlabel('X')
     plt.ylabel('Y')
