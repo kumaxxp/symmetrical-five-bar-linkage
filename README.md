@@ -5,6 +5,7 @@ This repository contains software for designing and testing symmetrical five-bar
 
 ## Directory Structure
 
+```
 five-bar-linkage-design/
 ├── docs/ # Documentation
 ├── src/ # Source code
@@ -15,6 +16,7 @@ five-bar-linkage-design/
 ├── examples/ # Sample code
 ├── .gitignore # Files and directories to ignore
 └── README.md # Project description
+```
 
 
 ## Installation
@@ -23,7 +25,7 @@ Clone the repository and install the required dependencies.
 git clone https://github.com/yourusername/symmetrical-five-bar-linkage.git
 cd symmetrical-five-bar-linkage
 pip install -r requirements.txt
-
+```
 
 ----
 日本語
@@ -37,8 +39,9 @@ pip install -r requirements.txt
 git clone https://github.com/yourusername/five-bar-linkage-design.git
 cd five-bar-linkage-design
 pip install -r requirements.txt
+```
 
-
+```
 five-bar-linkage-design/
 ├── docs/            # ドキュメントや資料
 ├── src/             # ソースコード
@@ -49,3 +52,4 @@ five-bar-linkage-design/
 ├── examples/        # サンプルコードや実行例
 ├── .gitignore       # Gitが管理しないファイルの設定
 └── README.md        # プロジェクトの説明
+```
