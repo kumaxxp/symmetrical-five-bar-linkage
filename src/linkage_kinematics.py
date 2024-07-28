@@ -48,12 +48,28 @@ class ForwardKinematics:
             self.X = self.calculate_X()
         
             # エンドエフェクタ E の座標を計算
-            self.E = self.X + np.array([self.e, 0])
+            self.E = self.calculate_E()
 
         except ValueError as e:
             print(f"Error: {e}")
             self.X = None
             self.E = None
+
+    def calculate_E(self):
+        # 点Eの計算
+        X = self.X
+        M1 = self.M1
+        
+        # 直線 M1-X の方程式
+        dx = X[0] - M1[0]
+        dy = X[1] - M1[1]
+        norm = np.sqrt(dx**2 + dy**2)
+        
+        # 点Eの計算
+        E_x = X[0] + self.e * dx / norm
+        E_y = X[1] + self.e * dy / norm
+        
+        return np.array([E_x, E_y])
 
     def calculate_X(self):
         """
@@ -200,8 +216,8 @@ def plot_kinematics(fk):
     plt.grid(True)
     plt.legend()
     # x軸とy軸の表示範囲を設定
-    plt.xlim(-400, 400)
-    plt.ylim(-400, 400)    
+    plt.xlim(-600, 600)
+    plt.ylim(-1000, 200)    
 #    plt.axis('equal')
     plt.show()
 
@@ -211,7 +227,7 @@ if __name__ == "__main__":
     l = 200    # B1 から B2 までの距離
     b = 200     # B1-M1 および B2-M2 のリンク長
     m = 400    # M1-X および M2-X のリンク長
-    e = 50     # X-E の距離
+    e = 200     # X-E の距離
     
     # 順運動学インスタンスの作成
     fk = ForwardKinematics(Yb, l, b, m, e)
