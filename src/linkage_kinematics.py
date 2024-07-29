@@ -29,15 +29,23 @@ class ForwardKinematics:
         self.X1 = None
         self.X2 = None
 
+        self.theta1 = None
+        self.theta2 = None
+
     def set_angles(self, theta1, theta2):
         """
         モーターの角度を設定
         :param theta1: B1-M1 の角度 (度)
         :param theta2: B2-M2 の角度 (度)
         """
+
+        self.theta1 = theta1
+        self.theta2 = theta2
+    
+    def compute_forward_kinematics(self):
         # 角度をラジアンに変換
-        theta1_rad = np.radians(theta1)
-        theta2_rad = np.radians(theta2)
+        theta1_rad = np.radians(self.theta1)
+        theta2_rad = np.radians(self.theta2)
         
         try:
             # M1, M2 の座標を計算
@@ -54,6 +62,7 @@ class ForwardKinematics:
             print(f"Error: {e}")
             self.X = None
             self.E = None
+
 
     def calculate_E(self):
         # 点Eの計算
@@ -98,9 +107,6 @@ class ForwardKinematics:
         self.X1 = X1
         self.X2 = X2
 
-        print(X1)
-        print(X2)
-        
         # 両方のX点で内角と凸形状チェックを行う
         valid_X = None
         for X_candidate in [X1, X2]:
@@ -236,6 +242,7 @@ if __name__ == "__main__":
     theta1 = -45
     theta2 = -135
     fk.set_angles(theta1, theta2)
+    fk.compute_forward_kinematics()
     
     # 順運動学の結果をプロット
     plot_kinematics(fk)
