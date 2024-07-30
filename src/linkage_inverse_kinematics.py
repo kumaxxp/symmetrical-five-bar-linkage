@@ -1,4 +1,47 @@
 import numpy as np
+import matplotlib.pyplot as plt
+
+def calculate_interior_angle_sum(points):
+    """
+    指定された点群から多角形の内角の和を計算します。
+    
+    Parameters:
+    - points: 頂点の座標リスト。例: [[x1, y1], [x2, y2], [x3, y3], ...]
+    
+    Returns:
+    - 内角の和（度単位）
+    """
+    def angle_between(p1, p2, p3):
+        """
+        3点 p1, p2, p3 から角度を計算します。
+        """
+        # ベクトルを計算
+        v1 = np.array(p1) - np.array(p2)
+        v2 = np.array(p3) - np.array(p2)
+        
+        # 内積とノルム
+        dot_product = np.dot(v1, v2)
+        norm_v1 = np.linalg.norm(v1)
+        norm_v2 = np.linalg.norm(v2)
+        
+        # 角度の計算
+        cos_theta = dot_product / (norm_v1 * norm_v2)
+        cos_theta = np.clip(cos_theta, -1.0, 1.0)  # 数値誤差対策
+        angle_rad = np.arccos(cos_theta)
+        return np.degrees(angle_rad)
+
+    n = len(points)
+    if n < 3:
+        raise ValueError("少なくとも3点必要です。")
+
+    angle_sum = 0.0
+    for i in range(n):
+        p1 = points[i]
+        p2 = points[(i + 1) % n]
+        p3 = points[(i + 2) % n]
+        angle_sum += angle_between(p1, p2, p3)
+    
+    return angle_sum
 
 def circle_intersections(center1, radius1, center2, radius2):
     """
@@ -90,6 +133,14 @@ class InverseKinematics:
         return circle_intersections(self.B2, self.b, X, self.m)
     
     def is_convex(self, points):
+
+        angle_sum = calculate_interior_angle_sum(points)
+        n = len(points)
+        expected_angle_sum = (n - 2) * 180  # 内角の和の期待値 (度)
+
+        if abs(angle_sum - expected_angle_sum) >= 1e-6:
+            return False
+
         def cross(x1, y1, x2, y2):
             return x1 * y2 - x2 * y1
         
@@ -138,7 +189,6 @@ class InverseKinematics:
 
 
 def plot_kinematics(ik):
-    import matplotlib.pyplot as plt
     
     plt.figure()
     
