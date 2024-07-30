@@ -101,7 +101,7 @@ class ForwardKinematics:
             self.E = self.calculate_E()
 
         except ValueError as e:
-            print(f"Error: {e}")
+        #    print(f"Error: {e}")
             self.X = None
             self.E = None
 
