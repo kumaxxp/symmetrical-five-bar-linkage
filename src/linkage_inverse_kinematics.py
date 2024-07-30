@@ -104,6 +104,39 @@ class InverseKinematics:
                 return False
         return True
 
+
+    def compute_bounding_box(self):
+        # 到達可能な点の範囲を計算し、バウンディングボックスを返す
+        reachable_x = [result[0] for result in self.valid_combinations]
+        reachable_y = [result[1] for result in self.valid_combinations]
+        x_min, x_max = min(reachable_x), max(reachable_x)
+        y_min, y_max = min(reachable_y), max(reachable_y)
+        return (x_min, x_max, y_min, y_max)
+
+    def calculate_area(self):
+        # 到達可能な領域の面積を計算する
+        from scipy.spatial import ConvexHull
+        if len(self.valid_combinations) >= 3:
+            hull = ConvexHull(np.array(self.valid_combinations))
+            return hull.volume
+        return 0
+
+    def extract_contours(self):
+        # 到達可能領域のコンターを抽出する
+        from scipy.spatial import ConvexHull
+        if len(self.valid_combinations) >= 3:
+            points = np.array(self.valid_combinations)
+            hull = ConvexHull(points)
+            return points[hull.vertices]
+        return np.array([])
+
+    def is_target_reachable(self, target_position):
+        # 任意の目標位置が到達可能かどうかを判定する
+        self.set_endeffector(target_position)
+        self.compute_inverse_kinematics()
+        return bool(self.valid_combinations)
+
+
 def plot_kinematics(ik):
     import matplotlib.pyplot as plt
     
