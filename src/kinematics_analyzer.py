@@ -43,14 +43,20 @@ class KinematicsAnalyzer:
         plt.scatter(reachable_points[:, 0], reachable_points[:, 1], c='blue', label='Reachable', marker='o')
         plt.scatter(unreachable_points[:, 0], unreachable_points[:, 1], c='red', label='Unreachable', marker='x')
         
+        # グリッド幅に合わせた矢印の長さ
+        grid_width = 50  # グリッドの幅
+        arrow_length = min(grid_width / 2, 50)  # 短くするために調整
+        
         for i in range(len(results)):
             if results[i, 4] == True and not np.isnan(results[i, 2]) and not np.isnan(results[i, 3]):
+                # θ1に基づく矢印
                 plt.arrow(results[i, 0], results[i, 1], 
-                          50 * np.cos(results[i, 2]), 50 * np.sin(results[i, 2]),
-                          head_width=20, head_length=20, fc='blue', ec='blue')
+                          arrow_length * np.cos(results[i, 2]), arrow_length * np.sin(results[i, 2]),
+                          head_width=10, head_length=10, fc='blue', ec='blue')
+                # θ2に基づく矢印
                 plt.arrow(results[i, 0], results[i, 1], 
-                          50 * np.cos(results[i, 3]), 50 * np.sin(results[i, 3]),
-                          head_width=20, head_length=20, fc='blue', ec='blue')
+                          arrow_length * np.cos(results[i, 3]), arrow_length * np.sin(results[i, 3]),
+                          head_width=10, head_length=10, fc='green', ec='green')
 
         plt.xlabel('X Coordinate')
         plt.ylabel('Y Coordinate')
