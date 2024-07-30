@@ -4,6 +4,7 @@ from linkage_inverse_kinematics import InverseKinematics
 
 class KinematicsAnalyzer:
     def __init__(self, Yb, l, b, m, e):
+        # InverseKinematicsクラスのインスタンスを作成
         self.ik = InverseKinematics(Yb, l, b, m, e)
     
     def analyze_reachability(self, x_range, y_range, step_size):
@@ -32,17 +33,29 @@ class KinematicsAnalyzer:
         theta2 = np.arctan2(M2[1] - self.ik.B2[1], M2[0] - self.ik.B2[0])
         return theta1, theta2
     
-    def plot_reachability(self, results):
+    def plot_reachability(self, results, default_position):
         results = np.array(results)
         
         # 到達可能な点をプロット
         reachable_points = results[results[:, 4] == True]
         unreachable_points = results[results[:, 4] == False]
         
-        plt.figure(figsize=(10, 6))
-        plt.scatter(reachable_points[:, 0], reachable_points[:, 1], c='blue', label='Reachable', marker='o')
-        plt.scatter(unreachable_points[:, 0], unreachable_points[:, 1], c='red', label='Unreachable', marker='x')
+        plt.figure(figsize=(12, 8))
         
+        # 到達可能な点をプロット
+        plt.scatter(reachable_points[:, 0], reachable_points[:, 1], c='blue', label='Reachable', marker='o')
+        
+        # デフォルトの位置で逆運動学のリンクをプロット
+        self.ik.set_endeffector(default_position)
+        self.ik.compute_inverse_kinematics()
+        if self.ik.valid_combinations:
+            for combination in self.ik.valid_combinations:
+                M1, X, M2 = combination
+                plt.plot([self.ik.B1[0], M1[0]], [self.ik.B1[1], M1[1]], 'r-')
+                plt.plot([M1[0], X[0]], [M1[1], X[1]], 'r-')
+                plt.plot([X[0], M2[0]], [X[1], M2[1]], 'r-')
+                plt.plot([M2[0], self.ik.B2[0]], [M2[1], self.ik.B2[1]], 'r-')
+
         # グリッド幅に合わせた矢印の長さ
         grid_width = 50  # グリッドの幅
         arrow_length = min(grid_width / 2, 50)  # 短くするために調整
@@ -57,10 +70,11 @@ class KinematicsAnalyzer:
                 plt.arrow(results[i, 0], results[i, 1], 
                           arrow_length * np.cos(results[i, 3]), arrow_length * np.sin(results[i, 3]),
                           head_width=10, head_length=10, fc='green', ec='green')
-
+        
+        # 軸とラベルの設定
         plt.xlabel('X Coordinate')
         plt.ylabel('Y Coordinate')
-        plt.title('Reachability Analysis with Angles')
+        plt.title('Reachability Analysis with Default Position Overlaid')
         plt.legend()
         plt.grid()
         plt.show()
@@ -77,12 +91,15 @@ if __name__ == "__main__":
     analyzer = KinematicsAnalyzer(Yb, l, b, m, e)
     
     # 解析範囲とステップサイズを設定
-    x_range = (-500, 500)
-    y_range = (-1000, 0)
+    x_range = (-700, 700)
+    y_range = (-1000, 1000)
     step_size = 50
 
     # 解析を実行
     results = analyzer.analyze_reachability(x_range, y_range, step_size)
     
+    # デフォルト位置
+    default_position = np.array([-100, -400])
+    
     # 結果をプロット
-    analyzer.plot_reachability(results)
+    analyzer.plot_reachability(results, default_position)
