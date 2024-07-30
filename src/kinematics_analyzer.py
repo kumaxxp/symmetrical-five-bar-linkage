@@ -4,7 +4,6 @@ from linkage_inverse_kinematics import InverseKinematics
 
 class KinematicsAnalyzer:
     def __init__(self, Yb, l, b, m, e):
-        # InverseKinematicsクラスのインスタンスを作成
         self.ik = InverseKinematics(Yb, l, b, m, e)
     
     def analyze_reachability(self, x_range, y_range, step_size):
@@ -29,9 +28,7 @@ class KinematicsAnalyzer:
     
     def calculate_angles(self, M1, X, M2):
         # 角度の計算
-        # B1-M1とX-M1の角度
         theta1 = np.arctan2(M1[1] - self.ik.B1[1], M1[0] - self.ik.B1[0])
-        # B2-M2とX-M2の角度
         theta2 = np.arctan2(M2[1] - self.ik.B2[1], M2[0] - self.ik.B2[0])
         return theta1, theta2
     
@@ -44,9 +41,20 @@ class KinematicsAnalyzer:
         
         plt.figure(figsize=(10, 6))
         plt.scatter(reachable_points[:, 0], reachable_points[:, 1], c='blue', label='Reachable', marker='o')
+        plt.scatter(unreachable_points[:, 0], unreachable_points[:, 1], c='red', label='Unreachable', marker='x')
+        
+        for i in range(len(results)):
+            if results[i, 4] == True and not np.isnan(results[i, 2]) and not np.isnan(results[i, 3]):
+                plt.arrow(results[i, 0], results[i, 1], 
+                          50 * np.cos(results[i, 2]), 50 * np.sin(results[i, 2]),
+                          head_width=20, head_length=20, fc='blue', ec='blue')
+                plt.arrow(results[i, 0], results[i, 1], 
+                          50 * np.cos(results[i, 3]), 50 * np.sin(results[i, 3]),
+                          head_width=20, head_length=20, fc='blue', ec='blue')
+
         plt.xlabel('X Coordinate')
         plt.ylabel('Y Coordinate')
-        plt.title('Reachability Analysis')
+        plt.title('Reachability Analysis with Angles')
         plt.legend()
         plt.grid()
         plt.show()
