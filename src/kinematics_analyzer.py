@@ -51,10 +51,19 @@ class KinematicsAnalyzer:
         if self.ik.valid_combinations:
             for combination in self.ik.valid_combinations:
                 M1, X, M2 = combination
-                plt.plot([self.ik.B1[0], M1[0]], [self.ik.B1[1], M1[1]], 'r-')
-                plt.plot([M1[0], X[0]], [M1[1], X[1]], 'r-')
-                plt.plot([X[0], M2[0]], [X[1], M2[1]], 'r-')
-                plt.plot([M2[0], self.ik.B2[0]], [M2[1], self.ik.B2[1]], 'r-')
+                plt.plot([self.ik.B1[0], M1[0]], [self.ik.B1[1], M1[1]], 'ro-')
+                plt.plot([M1[0], X[0]], [M1[1], X[1]], 'go-')
+                plt.plot([X[0], M2[0]], [X[1], M2[1]], 'bo-')
+                plt.plot([M2[0], self.ik.B2[0]], [M2[1], self.ik.B2[1]], 'mo-')
+                plt.plot([self.ik.B1[0], self.ik.B2[0]], [self.ik.B1[1], self.ik.B2[1]], 'k--')
+                plt.plot([X[0], self.ik.E[0]], [X[1], self.ik.E[1]], 'ko-')
+                
+                plt.plot(self.ik.B1[0], self.ik.B1[1], 'ro')  # B1
+                plt.plot(self.ik.B2[0], self.ik.B2[1], 'ro')  # B2
+                plt.plot(M1[0], M1[1], 'go')  # M1
+                plt.plot(X[0], X[1], 'bo')  # X
+                plt.plot(M2[0], M2[1], 'mo')  # M2
+                plt.plot(self.ik.E[0], self.ik.E[1], 'ko')  # E
 
         # グリッド幅に合わせた矢印の長さ
         grid_width = 50  # グリッドの幅
@@ -92,14 +101,14 @@ if __name__ == "__main__":
     
     # 解析範囲とステップサイズを設定
     x_range = (-700, 700)
-    y_range = (-1000, 1000)
+    y_range = (-1500, 1500)
     step_size = 50
 
     # 解析を実行
     results = analyzer.analyze_reachability(x_range, y_range, step_size)
     
     # デフォルト位置
-    default_position = np.array([-100, -400])
+    default_position = np.array([-20, -660])
     
     # 結果をプロット
     analyzer.plot_reachability(results, default_position)
