@@ -104,6 +104,15 @@ if __name__ == "__main__":
     y_range = (-1500, 1500)
     step_size = 50
 
+#    theta1_range = (-180, 0)  # 角度範囲
+#    theta2_range = (-180, 0)  # 角度範囲
+#    step_size = 4            # ステップサイズ
+
+    # 点Eを順運動でプロット    
+#    E_points = analyzer.analyze_angles(theta1_range, theta2_range, step_size)
+#    analyzer.plot_results(E_points)
+
+    # 点Eを逆運動でプロット
     # 解析を実行
     results = analyzer.analyze_reachability(x_range, y_range, step_size)
     

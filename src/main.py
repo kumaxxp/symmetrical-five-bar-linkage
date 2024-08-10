@@ -1,25 +1,42 @@
 import numpy as np
-from linkage_inverse_kinematics import InverseKinematics
+import matplotlib.pyplot as plt
+from forward_kinematics_analyzer import ForwardKinematicsAnalyzer
+from kinematics_analyzer import KinematicsAnalyzer
 
-# サンプルの値を設定
-Yb = 100  # B1, B2 の Y 座標
-l = 200    # B1 から B2 までの距離
-b = 200    # B1-M1 および B2-M2 のリンク長
-m = 400    # M1-X および M2-X のリンク長
-e = 200    # X-E の距離
+if __name__ == "__main__":
+    # 初期値設定
+    Yb = 100
+    l = 200
+    b = 200
+    m = 400
+    e = 200
+    theta1_range = (0, 360)  # θ1の範囲
+    theta2_range = (0, 360)  # θ2の範囲
+    step_size = 10  # ステップサイズ
 
-# InverseKinematicsクラスのインスタンスを作成
-ik = InverseKinematics(Yb, l, b, m, e)
+    # 逆運動学の解析
+    x_range = (-400, 400)
+    y_range = (-800, 0)
 
-# テストするエンドエフェクタの位置
-test_positions = [
-    np.array([0, 0]),
-    np.array([100, -200]),
-    np.array([-300, -600]),
-]
+    ik_analyzer = KinematicsAnalyzer(Yb, l, b, m, e)
+    ik_results = ik_analyzer.analyze_reachability(x_range, y_range, step_size)
 
-for pos in test_positions:
-    ik.set_endeffector(pos)
-    valid_combinations = ik.compute_inverse_kinematics()
-    print(f"Testing position: {pos}")
-    print("Valid combinations:", valid_combinations)
+    # 順運動学の解析
+    fk_analyzer = ForwardKinematicsAnalyzer(Yb, l, b, m, e)
+    fk_results = fk_analyzer.analyze_angles(theta1_range, theta2_range, step_size)
+
+    # プロット
+    plt.figure(figsize=(12, 6))
+    
+    # 逆運動学の結果をプロット
+    plt.scatter(ik_results[:, 0], ik_results[:, 1], c='blue', s=10, label='Inverse Kinematics Reachable Points')
+    
+    # 順運動学の結果をプロット
+    plt.scatter(fk_results[:, 0], fk_results[:, 1], c='red', s=10, label='Forward Kinematics Reachable Points')
+
+    plt.xlabel('X Coordinate')
+    plt.ylabel('Y Coordinate')
+    plt.title('Reachable Points from Inverse and Forward Kinematics')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
