@@ -101,10 +101,9 @@ class ForwardKinematics:
             self.E = self.calculate_E()
 
         except ValueError as e:
-        #    print(f"Error: {e}")
+            print(f"Error in forward kinematics: {e}")
             self.X = None
             self.E = None
-
 
     def calculate_E(self):
         # 点Eの計算
@@ -132,29 +131,21 @@ class ForwardKinematics:
         if d > 2 * self.m:
             raise ValueError("No valid intersection between circles. Increase link length m.")
         
+        # 円の半径
         r1, r2 = self.m, self.m
         x1, y1 = self.M1
         x2, y2 = self.M2
 
-        # 中心間距離
-        a = (r1**2 - r2**2 + d**2) / (2 * d)
-        h = np.sqrt(r1**2 - a**2)
-        x0 = x1 + a * (x2 - x1) / d
-        y0 = y1 + a * (y2 - y1) / d
-        
-        # X の座標を2点計算
-        X1 = np.array([x0 + h * (y2 - y1) / d, y0 - h * (x2 - x1) / d])
-        X2 = np.array([x0 - h * (y2 - y1) / d, y0 + h * (x2 - x1) / d])
-
+        # 円の交点を計算
+        X1,X2 = self.calculate_circle_intersection(x1, y1, r1, x2, y2, r2)
+    
         self.X1 = X1
         self.X2 = X2
 
         # 両方のX点で内角と凸形状チェックを行う
         valid_X = None
         for X_candidate in [X1, X2]:
-            self.X = X_candidate
-
-            points = [self.B1, self.M1, self.X, self.M2, self.B2]
+            points = [self.B1, self.M1, X_candidate, self.M2, self.B2]
             if self.is_convex(points) :
                 valid_X = X_candidate
                 break
@@ -164,11 +155,47 @@ class ForwardKinematics:
         
         return valid_X
 
+
+    def calculate_circle_intersection(self, x1, y1, r1, x2, y2, r2):
+        """
+    2つの円の交点を計算する
+        :param x1: 円1の中心のx座標
+        :param y1: 円1の中心のy座標
+        :param r1: 円1の半径
+        :param x2: 円2の中心のx座標
+        :param y2: 円2の中心のy座標
+        :param r2: 円2の半径
+        :return: 交点の座標のリスト
+        """
+        # 中心間距離
+        d = np.linalg.norm([x2 - x1, y2 - y1])
+        
+        if d > r1 + r2:
+            raise ValueError("No intersection: circles are too far apart.")
+        if d < abs(r1 - r2):
+            raise ValueError("No intersection: one circle is contained within the other.")
+        
+        # 中心間の中点
+        a = (r1**2 - r2**2 + d**2) / (2 * d)
+        h = np.sqrt(r1**2 - a**2)
+        x0 = x1 + a * (x2 - x1) / d
+        y0 = y1 + a * (y2 - y1) / d
+
+        # 交点の算
+        intersection1 = np.array([x0 + h * (y2 - y1) / d, y0 - h * (x2 - x1) / d])
+        intersection2 = np.array([x0 - h * (y2 - y1) / d, y0 + h * (x2 - x1) / d])
+
+        return intersection1, intersection2
+
     def cross(self, x1,y1,x2,y2):
         return x1*y2 - x2*y1
 
     def is_convex(self, points):
-
+        """
+        凸形状かどうかを判定する
+        :param points: 頂点の座標リスト
+        :return: 凸形状であれば True, そうでなければ False
+        """
         angle_sum = calculate_interior_angle_sum(points)
         n = len(points)
         expected_angle_sum = (n - 2) * 180  # 内角の和の期待値 (度)
@@ -176,9 +203,6 @@ class ForwardKinematics:
         if abs(angle_sum - expected_angle_sum) >= 1e-6:
             return False
 
-        def cross(x1, y1, x2, y2):
-            return x1 * y2 - x2 * y1
-        
         n = len(points)
         for i in range(n):
             a = points[i % n]
@@ -186,18 +210,19 @@ class ForwardKinematics:
             c = points[(i + 2) % n]
             vec_ab = [b[0] - a[0], b[1] - a[1]]
             vec_bc = [c[0] - b[0], c[1] - b[1]]
-            if cross(*vec_ab, *vec_bc) > 0:
+            if self.cross(*vec_ab, *vec_bc) > 0:
                 return False
         return True
 
     def calculate(self):
         """
         順運動学の計算を行い、結果を返す
-        :return: 順運動学の結果またはエラーメッセージ
+        :return: 順運動学の結果
         """
+        return self.format_result()
 
-        # Calculate the final result (example placeholder)
-        result = {
+    def format_result(self):
+        return {
             "B1": self.B1,
             "M1": self.M1,
             "X": self.X,
@@ -207,8 +232,6 @@ class ForwardKinematics:
             "X1": self.X1,
             "X2": self.X2
         }
-        
-        return result
 
 def plot_kinematics(fk):
     """
