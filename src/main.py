@@ -34,23 +34,38 @@ class KinematicsApp(tk.Tk):
         self.canvas = FigureCanvasTkAgg(self.figure, self.graph_frame)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
-        # スライダの作成
-        self.slider_theta1 = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
-        self.slider_theta1.set(self.initial_theta1)
-        ttk.Label(self.slider_frame, text='Theta1').pack(side=tk.TOP, fill=tk.X)
-        self.slider_theta1.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
-
-        self.slider_theta2 = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
-        self.slider_theta2.set(self.initial_theta2)
-        ttk.Label(self.slider_frame, text='Theta2').pack(side=tk.TOP, fill=tk.X)
-        self.slider_theta2.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
-
-        self.slider_thetaF = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
-        self.slider_thetaF.set(self.initial_thetaF)
-        ttk.Label(self.slider_frame, text='ThetaF').pack(side=tk.TOP, fill=tk.X)
-        self.slider_thetaF.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
+        # スライダとその値を表示するラベルの作成
+        self.slider_theta1 = self.create_slider_with_label('Theta1', self.initial_theta1, self.slider_frame)
+        self.slider_theta2 = self.create_slider_with_label('Theta2', self.initial_theta2, self.slider_frame)
+        self.slider_thetaF = self.create_slider_with_label('ThetaF', self.initial_thetaF, self.slider_frame)
 
         self.ek = self.initialize_kinematics()
+        self.update_plot()
+
+    def create_slider_with_label(self, label_text, initial_value, parent_frame):
+        # ラベルとスライダ用のフレーム作成
+        frame = ttk.Frame(parent_frame)
+        frame.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
+
+        # ラベルの作成
+        label = ttk.Label(frame, text=label_text)
+        label.pack(side=tk.LEFT)
+
+        # 現在の値を表示するラベル
+        value_label = ttk.Label(frame, text=str(initial_value))
+        value_label.pack(side=tk.RIGHT)
+
+        # スライダの作成
+        slider = ttk.Scale(frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=lambda v: self.update_slider_value(v, value_label))
+        slider.set(initial_value)
+        slider.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        # スライダを返す
+        return slider
+
+    def update_slider_value(self, value, value_label):
+        # スライダの値をラベルに表示
+        value_label.config(text=str(int(float(value))))
         self.update_plot()
 
     def initialize_kinematics(self):
