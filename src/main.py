@@ -26,22 +26,22 @@ class KinematicsApp(tk.Tk):
         self.canvas = FigureCanvasTkAgg(self.figure, self.main_frame)
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        # スライダフレームの作成
+        # スライダフレーム作成（右側に配置）
         self.slider_frame = ttk.Frame(self.main_frame)
-        self.slider_frame.pack(side=tk.BOTTOM, fill=tk.X)
+        self.slider_frame.pack(side=tk.RIGHT, fill=tk.Y)
 
         # スライダの作成
         self.slider_theta1 = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
         self.slider_theta1.set(self.initial_theta1)
-        self.slider_theta1.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.slider_theta1.pack(side=tk.TOP, fill=tk.X, expand=True)
         
         self.slider_theta2 = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
         self.slider_theta2.set(self.initial_theta2)
-        self.slider_theta2.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.slider_theta2.pack(side=tk.TOP, fill=tk.X, expand=True)
         
         self.slider_thetaF = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
         self.slider_thetaF.set(self.initial_thetaF)
-        self.slider_thetaF.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.slider_thetaF.pack(side=tk.TOP, fill=tk.X, expand=True)
 
         self.ek = self.initialize_kinematics()
         self.update_plot()
