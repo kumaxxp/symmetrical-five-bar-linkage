@@ -36,7 +36,7 @@ class KinematicsApp(tk.Tk):
         # 初期角度の設定
         self.initial_theta1 = -45
         self.initial_theta2 = -135
-        self.initial_thetaF = -60
+        self.initial_thetaF = -50
 
         # メインフレームの作成
         self.main_frame = ttk.Frame(self)
@@ -140,7 +140,6 @@ class KinematicsApp(tk.Tk):
             # 座標変換
             points = self.ek.format_result()  # すべての点を取得
             angle_flower = angle_between_vectors((0, 0), (1 ,0), points['E'], points['F']) # E-Fベクトルを平面に合わせる角度を計算
-            print(angle_flower)
             transformer = Transformation2D(origin=points['E'], angle=-angle_flower)
 
             # すべての点を変換

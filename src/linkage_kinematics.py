@@ -241,7 +241,7 @@ def plot_kinematics(fk):
     result = fk.calculate()
 
     if isinstance(result, str):
-        print(result)
+        #print(result)
         return
 
     B1, M1, X, M2, B2, E, X1, X2 = result["B1"], result["M1"], result["X"], result["M2"], result["B2"], result["E"], result["X1"], result["X2"]
