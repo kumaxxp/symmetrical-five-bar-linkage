@@ -66,6 +66,7 @@ class KinematicsApp(tk.Tk):
             print(f"エラーが発生しました: {e}")
 
     def plot_line(self, point1, point2, color, label):
+        """2点間の線をプロットするヘルパー関数"""
         if point1 is not None and point2 is not None:
             self.ax.plot([point1[0], point2[0]], [point1[1], point2[1]], f'{color}-o', label=label)
 
@@ -75,19 +76,15 @@ class KinematicsApp(tk.Tk):
         result = self.ek.calculate()
         B1, M1, X, M2, B2, E, F = result["B1"], result["M1"], result["X"], result["M2"], result["B2"], result["E"], result["F"]
 
-        if B1 is not None and M1 is not None:
-            self.ax.plot([B1[0], M1[0]], [B1[1], M1[1]], 'r-o', label='B1-M1')
-        if X is not None and M1 is not None:
-            self.ax.plot([M1[0], X[0]], [M1[1], X[1]], 'b-o', label='M1-X')
-        if X is not None and M2 is not None:
-            self.ax.plot([X[0], M2[0]], [X[1], M2[1]], 'g-o', label='X-M2')
-        if M2 is not None and B2 is not None:
-            self.ax.plot([M2[0], B2[0]], [M2[1], B2[1]], 'y-o', label='M2-B2')
-        if X is not None and E is not None:
-            self.ax.plot([X[0], E[0]], [X[1], E[1]], 'mo-', label='X-E')
-        if E is not None and F is not None:
-            self.ax.plot([E[0], F[0]], [E[1], F[1]], 'c-o', label='E-F')
+        # 線をプロット
+        self.plot_line(B1, M1, 'r', 'B1-M1')
+        self.plot_line(M1, X, 'b', 'M1-X')
+        self.plot_line(X, M2, 'g', 'X-M2')
+        self.plot_line(M2, B2, 'y', 'M2-B2')
+        self.plot_line(X, E, 'm', 'X-E')
+        self.plot_line(E, F, 'c', 'E-F')
 
+        # ポイントをプロット
         for point, color, label in zip([B1, M1, X, M2, B2, E, F],
                                        ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan'],
                                        ['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F']):
