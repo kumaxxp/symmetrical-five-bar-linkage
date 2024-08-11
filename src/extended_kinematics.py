@@ -140,9 +140,9 @@ if __name__ == "__main__":
     ek = ExtendedKinematics(Yb, l, b, m, e, f)
 
     # モーターの角度を設定 (サンプル値)
-    theta1 = -45+30
-    theta2 = -135+30
-    thetaF = -60  # X-E-Fの角度
+    theta1 = -45 + 30
+    theta2 = -135 + 30
+    thetaF = -60  # X-Fの角度
     ek.set_angles(theta1, theta2, thetaF)
     ek.compute_forward_kinematics()
 

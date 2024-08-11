@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from extended_kinematics import ExtendedKinematics
 
+from transformation import Transformation2D  # Transformation2Dをインポート
+
 class KinematicsApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -96,6 +98,13 @@ class KinematicsApp(tk.Tk):
             self.ek.compute_forward_kinematics()
 
             self.plot_extended_kinematics(self.ax1, self.canvas1)  # 1つ目のグラフにプロット
+
+            # 座標変換の例
+            points = self.ek.format_result()
+            transformer = Transformation2D(origin=points['E'], angle=45)  # 原点を(0, 0)に設定し、45度回転
+            transformed_point = transformer.transform(points['X'])
+            print(f"Original point: {points['X']}, Transformed point: {transformed_point}")
+                              
             self.plot_extended_kinematics(self.ax2, self.canvas2)  # 2つ目のグラフにプロット
         except Exception as e:
             print(f"エラーが発生しました: {e}")
