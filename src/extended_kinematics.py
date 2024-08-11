@@ -83,6 +83,19 @@ class ExtendedKinematics(ForwardKinematics):
         result["F"] = self.F  # Fの位置を結果に追加
         return result
 
+    def format_result(self):
+        return {
+            "B1": self.B1,
+            "M1": self.M1,
+            "X": self.X,
+            "M2": self.M2,
+            "B2": self.B2,
+            "E": self.E,
+            "F": self.F,
+            "X1": self.X1,
+            "X2": self.X2
+        }
+
 def plot_extended_kinematics(ek):
     """
     拡張運動学の結果をプロットする

@@ -7,6 +7,25 @@ from extended_kinematics import ExtendedKinematics
 
 from transformation import Transformation2D  # Transformation2Dをインポート
 
+def angle_between_vectors(v1_start, v1_end, v2_start, v2_end):
+    # ベクトルを計算
+    v1 = np.array(v1_end) - np.array(v1_start)
+    v2 = np.array(v2_end) - np.array(v2_start)
+    
+    # ベクトル間の角度を計算（ラジアン）
+    angle_rad = np.arctan2(np.cross(v1, v2), np.dot(v1, v2))
+    
+    # ラジアンから度に変換
+    angle_deg = np.degrees(angle_rad)
+    
+    # 角度の範囲を -180 から 180 度に調整
+    if angle_deg < -180:
+        angle_deg += 360
+    elif angle_deg > 180:
+        angle_deg -= 360
+    
+    return angle_deg
+
 class KinematicsApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -57,6 +76,7 @@ class KinematicsApp(tk.Tk):
             ax.set_xlim(-600, 600)
             ax.set_ylim(-1000, 200)
             ax.set_aspect('equal', adjustable='box')
+            ax.set_anchor('C')
             ax.set_xlabel('X')
             ax.set_ylabel('Y')
             ax.grid(True)
@@ -119,7 +139,9 @@ class KinematicsApp(tk.Tk):
 
             # 座標変換
             points = self.ek.format_result()  # すべての点を取得
-            transformer = Transformation2D(origin=points['E'], angle=45)  # 点Eを中心に45度回転
+            angle_flower = angle_between_vectors((0, 0), (1 ,0), points['E'], points['F']) # E-Fベクトルを平面に合わせる角度を計算
+            print(angle_flower)
+            transformer = Transformation2D(origin=points['E'], angle=-angle_flower)
 
             # すべての点を変換
             transformed_points = {key: transformer.transform(value) for key, value in points.items()}
@@ -159,6 +181,7 @@ class KinematicsApp(tk.Tk):
 
         ax.set_xlim(-600, 600)
         ax.set_ylim(-1000, 200)
+        ax.set_anchor('C')
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_title('Extended Kinematics Visualization')
@@ -169,7 +192,7 @@ class KinematicsApp(tk.Tk):
         canvas.draw()
 
     def plot_transformed_kinematics(self, ax, points, canvas):
-#        ax.clear()
+        ax.clear()
 
         # 線をプロット
         self.plot_line(ax, points['B1'], points['M1'], 'r', 'B1-M1')
@@ -180,7 +203,7 @@ class KinematicsApp(tk.Tk):
         self.plot_line(ax, points['E'], points['F'], 'c', 'E-F')
 
         # ポイントをプロット
-        for point, color, label in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
+        for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
                                     ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan']):
             if point in points:
                 ax.scatter(*points[point], color=color, zorder=5)
