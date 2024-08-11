@@ -10,7 +10,7 @@ class KinematicsApp(tk.Tk):
         super().__init__()
 
         self.title('Kinematics Visualization')
-        self.geometry('800x600')
+        self.geometry('1000x600')
 
         # 初期角度の設定
         self.initial_theta1 = -45
@@ -21,27 +21,34 @@ class KinematicsApp(tk.Tk):
         self.main_frame = ttk.Frame(self)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Matplotlib Figureの作成
-        self.figure, self.ax = plt.subplots()
-        self.canvas = FigureCanvasTkAgg(self.figure, self.main_frame)
-        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        # グラフ用フレームの作成（左側に配置）
+        self.graph_frame = ttk.Frame(self.main_frame)
+        self.graph_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # スライダフレーム作成（右側に配置）
+        # スライダ用フレームの作成（右側に配置）
         self.slider_frame = ttk.Frame(self.main_frame)
         self.slider_frame.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Matplotlib Figureの作成
+        self.figure, self.ax = plt.subplots()
+        self.canvas = FigureCanvasTkAgg(self.figure, self.graph_frame)
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
         # スライダの作成
         self.slider_theta1 = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
         self.slider_theta1.set(self.initial_theta1)
-        self.slider_theta1.pack(side=tk.TOP, fill=tk.X, expand=True)
-        
+        ttk.Label(self.slider_frame, text='Theta1').pack(side=tk.TOP, fill=tk.X)
+        self.slider_theta1.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
+
         self.slider_theta2 = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
         self.slider_theta2.set(self.initial_theta2)
-        self.slider_theta2.pack(side=tk.TOP, fill=tk.X, expand=True)
-        
+        ttk.Label(self.slider_frame, text='Theta2').pack(side=tk.TOP, fill=tk.X)
+        self.slider_theta2.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
+
         self.slider_thetaF = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
         self.slider_thetaF.set(self.initial_thetaF)
-        self.slider_thetaF.pack(side=tk.TOP, fill=tk.X, expand=True)
+        ttk.Label(self.slider_frame, text='ThetaF').pack(side=tk.TOP, fill=tk.X)
+        self.slider_thetaF.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
 
         self.ek = self.initialize_kinematics()
         self.update_plot()
