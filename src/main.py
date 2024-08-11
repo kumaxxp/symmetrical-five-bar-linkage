@@ -12,6 +12,11 @@ class KinematicsApp(tk.Tk):
         self.title('Kinematics Visualization')
         self.geometry('800x600')
 
+        # 初期角度の設定
+        self.initial_theta1 = -45
+        self.initial_theta2 = -135
+        self.initial_thetaF = -60
+
         # メインフレームの作成
         self.main_frame = ttk.Frame(self)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
@@ -27,13 +32,15 @@ class KinematicsApp(tk.Tk):
 
         # スライダの作成
         self.slider_theta1 = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
-        self.slider_theta1.set(-45)
+        self.slider_theta1.set(self.initial_theta1)
         self.slider_theta1.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        
         self.slider_theta2 = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
-        self.slider_theta2.set(-135)
+        self.slider_theta2.set(self.initial_theta2)
         self.slider_theta2.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        
         self.slider_thetaF = ttk.Scale(self.slider_frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=self.update_plot)
-        self.slider_thetaF.set(-60)
+        self.slider_thetaF.set(self.initial_thetaF)
         self.slider_thetaF.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
         self.ek = self.initialize_kinematics()
@@ -48,7 +55,7 @@ class KinematicsApp(tk.Tk):
         e = 200
         f = 150
         ek = ExtendedKinematics(Yb, l, b, m, e, f)
-        ek.set_angles(-45, -135, -60)
+        ek.set_angles(self.initial_theta1, self.initial_theta2, self.initial_thetaF)
         ek.compute_forward_kinematics()
         return ek
 
