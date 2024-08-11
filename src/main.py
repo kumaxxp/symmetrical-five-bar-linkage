@@ -210,7 +210,7 @@ class KinematicsApp(tk.Tk):
                 ax.text(points[point][0], points[point][1], point, fontsize=12, ha='right')
 
         ax.set_xlim(-600, 600)
-        ax.set_ylim(-1000, 200)
+        ax.set_ylim(0, 1200)
         ax.set_anchor('C')  # アンカー位置を中央に固定
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
