@@ -65,6 +65,10 @@ class KinematicsApp(tk.Tk):
         except Exception as e:
             print(f"エラーが発生しました: {e}")
 
+    def plot_line(self, point1, point2, color, label):
+        if point1 is not None and point2 is not None:
+            self.ax.plot([point1[0], point2[0]], [point1[1], point2[1]], f'{color}-o', label=label)
+
     def plot_extended_kinematics(self):
         self.ax.clear()
 
@@ -99,6 +103,12 @@ class KinematicsApp(tk.Tk):
         self.ax.grid(True)
         self.ax.legend()
         self.canvas.draw()
+
+    def destroy(self):
+        # Matplotlibのクリーンアップ
+        self.canvas.get_tk_widget().destroy()
+        plt.close(self.figure)  # Figureを閉じる
+        super().destroy()  # Tkinterのdestroyを呼び出す
 
 if __name__ == '__main__':
     app = KinematicsApp()
