@@ -99,13 +99,16 @@ class KinematicsApp(tk.Tk):
 
             self.plot_extended_kinematics(self.ax1, self.canvas1)  # 1つ目のグラフにプロット
 
-            # 座標変換の例
-            points = self.ek.format_result()
-            transformer = Transformation2D(origin=points['E'], angle=45)  # 原点を(0, 0)に設定し、45度回転
-            transformed_point = transformer.transform(points['X'])
-            print(f"Original point: {points['X']}, Transformed point: {transformed_point}")
-                              
-            self.plot_extended_kinematics(self.ax2, self.canvas2)  # 2つ目のグラフにプロット
+            # 座標変換
+            points = self.ek.format_result()  # すべての点を取得
+            transformer = Transformation2D(origin=points['E'], angle=45)  # 点Eを中心に45度回転
+
+            # すべての点を変換
+            transformed_points = {key: transformer.transform(value) for key, value in points.items()}
+
+            # 2つ目のグフにプロット
+            self.plot_transformed_kinematics(self.ax2, transformed_points, self.canvas2)
+
         except Exception as e:
             print(f"エラーが発生しました: {e}")
 
@@ -145,8 +148,33 @@ class KinematicsApp(tk.Tk):
         ax.legend()
         canvas.draw()
 
-    def destroy(self):
-        # Matplotlibのクリーンアップ
+    def plot_transformed_kinematics(self, ax, points, canvas):
+        ax.clear()
+
+        # 線をプロット
+        self.plot_line(ax, points['B1'], points['M1'], 'r', 'B1-M1')
+        self.plot_line(ax, points['M1'], points['X'], 'b', 'M1-X')
+        self.plot_line(ax, points['X'], points['M2'], 'g', 'X-M2')
+        self.plot_line(ax, points['M2'], points['B2'], 'y', 'M2-B2')
+        self.plot_line(ax, points['X'], points['E'], 'm', 'X-E')
+        self.plot_line(ax, points['E'], points['F'], 'c', 'E-F')
+
+        # ポイントをプロット
+        for point, color, label in zip(['B1', 'M1', 'X', 'M', 'B2', 'E', 'F'],
+                                       ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan']):
+            if point in points:
+                ax.scatter(*points[point], color=color, zorder=5)
+                ax.text(points[point][0], points[point][1], point, fontsize=12, ha='right')
+
+        ax.set_xlim(-600, 600)
+        ax.set_ylim(-1000, 200)
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_title('Transformed Kinematics Visualization')
+        ax.grid(True)
+        canvas.draw()
+
+    def destroy(self):        # Matplotlibのクリーンアップ
         self.canvas1.get_tk_widget().destroy()
         self.canvas2.get_tk_widget().destroy()
         plt.close(self.figure1)  # Figureを閉じる
