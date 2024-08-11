@@ -106,7 +106,7 @@ class KinematicsApp(tk.Tk):
             # すべての点を変換
             transformed_points = {key: transformer.transform(value) for key, value in points.items()}
 
-            # 2つ目のグフにプロット
+            # 2つ目のグラフにプロット
             self.plot_transformed_kinematics(self.ax2, transformed_points, self.canvas2)
 
         except Exception as e:
@@ -160,7 +160,7 @@ class KinematicsApp(tk.Tk):
         self.plot_line(ax, points['E'], points['F'], 'c', 'E-F')
 
         # ポイントをプロット
-        for point, color, label in zip(['B1', 'M1', 'X', 'M', 'B2', 'E', 'F'],
+        for point, color, label in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
                                        ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan']):
             if point in points:
                 ax.scatter(*points[point], color=color, zorder=5)
@@ -172,9 +172,11 @@ class KinematicsApp(tk.Tk):
         ax.set_ylabel('Y')
         ax.set_title('Transformed Kinematics Visualization')
         ax.grid(True)
+        ax.legend()
         canvas.draw()
 
-    def destroy(self):        # Matplotlibのクリーンアップ
+    def destroy(self):
+        # Matplotlibのリーンアップ
         self.canvas1.get_tk_widget().destroy()
         self.canvas2.get_tk_widget().destroy()
         plt.close(self.figure1)  # Figureを閉じる
