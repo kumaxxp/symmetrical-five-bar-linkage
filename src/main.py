@@ -28,14 +28,20 @@ class KinematicsApp(tk.Tk):
         self.graph_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         # 1つ目のグラフのフレーム
-        self.figure1, self.ax1 = plt.subplots()
+        self.figure1 = plt.Figure(figsize=(6, 6), dpi=80)
+        self.ax1 = self.figure1.add_subplot(111)
         self.canvas1 = FigureCanvasTkAgg(self.figure1, self.graph_frame)
         self.canvas1.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         # 2つ目のグラフのフレーム
-        self.figure2, self.ax2 = plt.subplots()
+        self.figure2 = plt.Figure(figsize=(6, 6), dpi=80)
+        self.ax2 = self.figure2.add_subplot(111)
         self.canvas2 = FigureCanvasTkAgg(self.figure2, self.graph_frame)
         self.canvas2.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
+        # グラフのレイアウトを統一するために調整
+        self.figure1.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
+        self.figure2.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
 
         # スライダ用フレームの作成（右側に配置）
         self.slider_frame = ttk.Frame(self.main_frame)
@@ -45,6 +51,18 @@ class KinematicsApp(tk.Tk):
         self.slider_theta1 = self.create_slider_with_label('Theta1', self.initial_theta1, self.slider_frame)
         self.slider_theta2 = self.create_slider_with_label('Theta2', self.initial_theta2, self.slider_frame)
         self.slider_thetaF = self.create_slider_with_label('ThetaF', self.initial_thetaF, self.slider_frame)
+
+        # グラフの初期設定
+        for ax in [self.ax1, self.ax2]:
+            ax.set_xlim(-600, 600)
+            ax.set_ylim(-1000, 200)
+            ax.set_aspect('equal', adjustable='box')
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            ax.grid(True)
+
+        self.ax1.set_title('Extended Kinematics Visualization')
+        self.ax2.set_title('Transformed Kinematics Visualization')
 
         self.ek = self.initialize_kinematics()
         self.update_plot()
@@ -146,10 +164,12 @@ class KinematicsApp(tk.Tk):
         ax.set_title('Extended Kinematics Visualization')
         ax.grid(True)
         ax.legend()
+
+        self.figure1.tight_layout()
         canvas.draw()
 
     def plot_transformed_kinematics(self, ax, points, canvas):
-        ax.clear()
+#        ax.clear()
 
         # 線をプロット
         self.plot_line(ax, points['B1'], points['M1'], 'r', 'B1-M1')
@@ -161,18 +181,21 @@ class KinematicsApp(tk.Tk):
 
         # ポイントをプロット
         for point, color, label in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
-                                       ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan']):
+                                    ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan']):
             if point in points:
                 ax.scatter(*points[point], color=color, zorder=5)
                 ax.text(points[point][0], points[point][1], point, fontsize=12, ha='right')
 
         ax.set_xlim(-600, 600)
         ax.set_ylim(-1000, 200)
+        ax.set_anchor('C')  # アンカー位置を中央に固定
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_title('Transformed Kinematics Visualization')
         ax.grid(True)
         ax.legend()
+
+        self.figure1.tight_layout()
         canvas.draw()
 
     def destroy(self):
