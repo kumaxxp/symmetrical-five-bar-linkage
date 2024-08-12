@@ -4,26 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from extended_kinematics import ExtendedKinematics
-
-from transformation import Transformation2D  # Transformation2Dをインポート
+from transformation import Transformation2D
 
 def angle_between_vectors(v1_start, v1_end, v2_start, v2_end):
-    # ベクトルを計算
     v1 = np.array(v1_end) - np.array(v1_start)
     v2 = np.array(v2_end) - np.array(v2_start)
-    
-    # ベクトル間の角度を計算（ラジアン）
     angle_rad = np.arctan2(np.cross(v1, v2), np.dot(v1, v2))
-    
-    # ラジアンから度に変換
     angle_deg = np.degrees(angle_rad)
-    
-    # 角度の範囲を -180 から 180 度に調整
     if angle_deg < -180:
         angle_deg += 360
     elif angle_deg > 180:
         angle_deg -= 360
-    
     return angle_deg
 
 class KinematicsApp(tk.Tk):
@@ -31,12 +22,15 @@ class KinematicsApp(tk.Tk):
         super().__init__()
 
         self.title('Kinematics Visualization')
-        self.geometry('1200x1000')  # ウィンドウサイズを拡大
+        self.geometry('1400x1000')  # ウィンドウサイズを拡大
+        self.resizable(False, True)  # 横方向のリサイズを禁止、縦方向は許可
+
 
         # 初期角度の設定
-        self.initial_theta1 = -45
-        self.initial_theta2 = -135
-        self.initial_thetaF = -50
+        self.initial_angles = {
+            'left': {'theta1': -45, 'theta2': -135, 'thetaF': -50},
+            'right': {'theta1': -45, 'theta2': -135, 'thetaF': -50}
+        }
 
         # メインフレームの作成
         self.main_frame = ttk.Frame(self)
@@ -66,10 +60,18 @@ class KinematicsApp(tk.Tk):
         self.slider_frame = ttk.Frame(self.main_frame)
         self.slider_frame.pack(side=tk.RIGHT, fill=tk.Y)
 
-        # スライダとその値を表示するラベルの作成
-        self.slider_theta1 = self.create_slider_with_label('Theta1', self.initial_theta1, self.slider_frame)
-        self.slider_theta2 = self.create_slider_with_label('Theta2', self.initial_theta2, self.slider_frame)
-        self.slider_thetaF = self.create_slider_with_label('ThetaF', self.initial_thetaF, self.slider_frame)
+        # 左足と右足のスライダーを作成
+        self.sliders = {}
+        for leg in ['left', 'right']:
+            leg_frame = ttk.LabelFrame(self.slider_frame, text=f"{leg.capitalize()} Leg")
+            leg_frame.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
+            self.sliders[leg] = {}
+            for angle in ['theta1', 'theta2', 'thetaF']:
+                self.sliders[leg][angle] = self.create_slider_with_label(
+                    f"{leg.capitalize()} {angle}", 
+                    self.initial_angles[leg][angle], 
+                    leg_frame
+                )
 
         # グラフの初期設定
         for ax in [self.ax1, self.ax2]:
@@ -84,69 +86,48 @@ class KinematicsApp(tk.Tk):
         self.ax1.set_title('Extended Kinematics Visualization')
         self.ax2.set_title('Transformed Kinematics Visualization')
 
-        self.ek = self.initialize_kinematics()
+        self.ek_left = self.initialize_kinematics()
+        self.ek_right = self.initialize_kinematics()
         self.update_plot()
 
     def create_slider_with_label(self, label_text, initial_value, parent_frame):
-        # ラベルとスライダ用のフレーム作成
         frame = ttk.Frame(parent_frame)
-        frame.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
+        frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
 
-        # ラベルの作成
         label = ttk.Label(frame, text=label_text)
         label.pack(side=tk.LEFT)
 
-        # 現在の値を表示するラベル
-        value_label = ttk.Label(frame, text=str(initial_value))
+        value_label = ttk.Label(frame, text=str)
         value_label.pack(side=tk.RIGHT)
 
-        # スライダの作成
-        slider = ttk.Scale(frame, from_=-180, to=180, orient=tk.HORIZONTAL, command=lambda v: self.update_slider_value(v, value_label))
+        slider = ttk.Scale(frame, from_=-180, to=180, orient=tk.HORIZONTAL, 
+                           command=lambda v: self.update_slider_value(v, value_label),
+                           length=200)
         slider.set(initial_value)
         slider.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        # スライダを返す
         return slider
 
     def update_slider_value(self, value, value_label):
-        # スライダの値をラベルに表示
         value_label.config(text=str(int(float(value))))
         self.update_plot()
 
     def initialize_kinematics(self):
-        # 順運動学の初期化
-        Yb = 100
-        l = 200
-        b = 200
-        m = 400
-        e = 200
-        f = 150
+        Yb, l, b, m, e, f = 100, 200, 200, 400, 200, 150
         ek = ExtendedKinematics(Yb, l, b, m, e, f)
-        ek.set_angles(self.initial_theta1, self.initial_theta2, self.initial_thetaF)
-        ek.compute_forward_kinematics()
         return ek
 
     def update_plot(self, event=None):
         try:
-            theta1 = self.slider_theta1.get()
-            theta2 = self.slider_theta2.get()
-            thetaF = self.slider_thetaF.get()
+            for leg, ek in [('left', self.ek_left), ('right', self.ek_right)]:
+                theta1 = self.sliders[leg]['theta1'].get()
+                theta2 = self.sliders[leg]['theta2'].get()
+                thetaF = self.sliders[leg]['thetaF'].get()
+                ek.set_angles(theta1, theta2, thetaF)
+                ek.compute_forward_kinematics()
 
-            self.ek.set_angles(theta1, theta2, thetaF)
-            self.ek.compute_forward_kinematics()
-
-            self.plot_extended_kinematics(self.ax1, self.canvas1)  # 1つ目のグラフにプロット
-
-            # 座標変換
-            points = self.ek.format_result()  # すべての点を取得
-            angle_flower = angle_between_vectors((0, 0), (1 ,0), points['E'], points['F']) # E-Fベクトルを平面に合わせる角度を計算
-            transformer = Transformation2D(origin=points['E'], angle=-angle_flower)
-
-            # すべての点を変換
-            transformed_points = {key: transformer.transform(value) for key, value in points.items()}
-
-            # 2つ目のグラフにプロット
-            self.plot_transformed_kinematics(self.ax2, transformed_points, self.canvas2)
+            self.plot_extended_kinematics(self.ax1, self.canvas1)
+            self.plot_transformed_kinematics(self.ax2, self.canvas2)
 
         except Exception as e:
             print(f"エラーが発生しました: {e}")
@@ -159,24 +140,25 @@ class KinematicsApp(tk.Tk):
     def plot_extended_kinematics(self, ax, canvas):
         ax.clear()
 
-        result = self.ek.calculate()
-        B1, M1, X, M2, B2, E, F = result["B1"], result["M1"], result["X"], result["M2"], result["B2"], result["E"], result["F"]
+        for leg, ek in [('left', self.ek_left), ('right', self.ek_right)]:
+            result = ek.calculate()
+            B1, M1, X, M2, B2, E, F = result["B1"], result["M1"], result["X"], result["M2"], result["B2"], result["E"], result["F"]
 
-        # 線をプロット
-        self.plot_line(ax, B1, M1, 'r', 'B1-M1')
-        self.plot_line(ax, M1, X, 'b', 'M1-X')
-        self.plot_line(ax, X, M2, 'g', 'X-M2')
-        self.plot_line(ax, M2, B2, 'y', 'M2-B2')
-        self.plot_line(ax, X, E, 'm', 'X-E')
-        self.plot_line(ax, E, F, 'c', 'E-F')
+            # 線をプロット
+            self.plot_line(ax, B1, M1, 'r', f'{leg} B1-M1')
+            self.plot_line(ax, M1, X, 'b', f'{leg} M1-X')
+            self.plot_line(ax, X, M2, 'g', f'{leg} X-M2')
+            self.plot_line(ax, M2, B2, 'y', f'{leg} M2-B2')
+            self.plot_line(ax, X, E, 'm', f'{leg} X-E')
+            self.plot_line(ax, E, F, 'c', f'{leg} E-F')
 
-        # ポイントをプロット
-        for point, color, label in zip([B1, M1, X, M2, B2, E, F],
-                                       ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan'],
-                                       ['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F']):
-            if point is not None:
-                ax.scatter(*point, color=color, zorder=5)
-                ax.text(point[0], point[1], label, fontsize=12, ha='right')
+            # ポイントをプロット
+            for point, color, label in zip([B1, M1, X, M2, B2, E, F],
+                                           ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan'],
+                                           ['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F']):
+                if point is not None:
+                    ax.scatter(*point, color=color, zorder=5)
+                    ax.text(point[0], point[1], f'{leg} {label}', fontsize=8, ha='right')
 
         ax.set_xlim(-600, 600)
         ax.set_ylim(-1000, 200)
@@ -190,43 +172,49 @@ class KinematicsApp(tk.Tk):
         self.figure1.tight_layout()
         canvas.draw()
 
-    def plot_transformed_kinematics(self, ax, points, canvas):
+    def plot_transformed_kinematics(self, ax, canvas):
         ax.clear()
 
-        # 線をプロット
-        self.plot_line(ax, points['B1'], points['M1'], 'r', 'B1-M1')
-        self.plot_line(ax, points['M1'], points['X'], 'b', 'M1-X')
-        self.plot_line(ax, points['X'], points['M2'], 'g', 'X-M2')
-        self.plot_line(ax, points['M2'], points['B2'], 'y', 'M2-B2')
-        self.plot_line(ax, points['X'], points['E'], 'm', 'X-E')
-        self.plot_line(ax, points['E'], points['F'], 'c', 'E-F')
+        for leg, ek in [('left', self.ek_left), ('right', self.ek_right)]:
+            points = ek.format_result()
+            angle_flower = angle_between_vectors((0, 0), (1, 0), points['E'], points['F'])
+            transformer = Transformation2D(origin=points['E'], angle=-angle_flower)
 
-        # ポイントをプロット
-        for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
+            transformed_points = {key: transformer.transform(value) for key, value in points.items()}
+
+            # 線をプロット
+            self.plot_line(ax, transformed_points['B1'], transformed_points['M1'], 'r', f'{leg} B1-M1')
+            self.plot_line(ax, transformed_points['M1'], transformed_points['X'], 'b', f'{leg} M1-X')
+            self.plot_line(ax, transformed_points['X'], transformed_points['M2'], 'g', f'{leg} X-M2')
+            self.plot_line(ax, transformed_points['M2'], transformed_points['B2'], 'y', f'{leg} M2-B2')
+            self.plot_line(ax, transformed_points['X'], transformed_points['E'], 'm', f'{leg} X-E')
+            self.plot_line(ax, transformed_points['E'], transformed_points['F'], 'c', f'{leg} E-F')
+
+            # ポイントをプロット
+            for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
                                     ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan']):
-            if point in points:
-                ax.scatter(*points[point], color=color, zorder=5)
-                ax.text(points[point][0], points[point][1], point, fontsize=12, ha='right')
+                if point in transformed_points:
+                    ax.scatter(*transformed_points[point], color=color, zorder=5)
+                    ax.text(transformed_points[point][0], transformed_points[point][1], f'{leg} {point}', fontsize=8, ha='right')
 
         ax.set_xlim(-600, 600)
         ax.set_ylim(0, 1200)
-        ax.set_anchor('C')  # アンカー位置を中央に固定
+        ax.set_anchor('C')
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_title('Transformed Kinematics Visualization')
         ax.grid(True)
         ax.legend()
 
-        self.figure1.tight_layout()
+        self.figure2.tight_layout()
         canvas.draw()
 
     def destroy(self):
-        # Matplotlibのリーンアップ
         self.canvas1.get_tk_widget().destroy()
         self.canvas2.get_tk_widget().destroy()
-        plt.close(self.figure1)  # Figureを閉じる
-        plt.close(self.figure2)  # Figureを閉じる
-        super().destroy()  # Tkinterのdestroyを呼び出す
+        plt.close(self.figure1)
+        plt.close(self.figure2)
+        super().destroy()
 
 if __name__ == '__main__':
     app = KinematicsApp()
