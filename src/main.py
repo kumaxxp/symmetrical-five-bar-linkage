@@ -17,6 +17,23 @@ class KinematicsApp(tk.Tk):
         self.last_angles = {'left': {}, 'right': {}}
         self.update_plot()
 
+        # 初期状態を計算
+        self.initialize_kinematics()
+        
+        # キャンバスが描画された後にupdate_plotを呼び出す
+        self.after(100, self.update_plot)        
+
+    def initialize_kinematics(self):
+        for leg, ek in [('left', self.ek_left), ('right', self.ek_right)]:
+            initial_angles = {
+                'theta1': self.sliders[leg]['theta1'].get(),
+                'theta2': self.sliders[leg]['theta2'].get(),
+                'thetaF': self.sliders[leg]['thetaF'].get()
+            }
+            ek.set_angles(**initial_angles)
+            ek.compute_forward_kinematics()
+            self.last_angles[leg] = initial_angles.copy()
+
     def setup_ui(self):
         self.main_frame = ttk.Frame(self)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
@@ -95,6 +112,10 @@ class KinematicsApp(tk.Tk):
 
         self.draw_extended_kinematics()
         self.draw_transformed_kinematics()
+
+        # キャンバスのサイズが変更された場合に再描画
+        self.canvas1.update()
+        self.canvas2.update()
 
     def draw_extended_kinematics(self):
         self.canvas1.delete("all")
