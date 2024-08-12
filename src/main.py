@@ -13,6 +13,7 @@ class KinematicsApp(tk.Tk):
 
         self.setup_ui()
         self.setup_kinematics()
+        self.set_initial_slider_values()
         self.last_angles = {'left': {}, 'right': {}}
         self.update_plot()
 
@@ -32,7 +33,7 @@ class KinematicsApp(tk.Tk):
         self.slider_frame = ttk.Frame(self.main_frame)
         self.slider_frame.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.iders = {}
+        self.sliders = {}  # ここで self.sliders を初期化
         for leg in ['left', 'right']:
             leg_frame = ttk.LabelFrame(self.slider_frame, text=f"{leg.capitalize()} Leg")
             leg_frame.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
@@ -40,9 +41,15 @@ class KinematicsApp(tk.Tk):
             for angle in ['theta1', 'theta2', 'thetaF']:
                 self.sliders[leg][angle] = self.create_slider_with_label(
                     f"{leg.capitalize()} {angle}", 
-                    -45 if angle == 'theta1' else -135 if angle == 'theta2' else -50, 
+                    0,
                     leg_frame
                 )
+
+    def set_initial_slider_values(self):
+        for leg in ['left', 'right']:
+            self.sliders[leg]['theta1'].set(-45)
+            self.sliders[leg]['theta2'].set(-135)
+            self.sliders[leg]['thetaF'].set(-50)
 
     def create_slider_with_label(self, label_text, initial_value, parent_frame):
         frame = ttk.Frame(parent_frame)
@@ -71,6 +78,9 @@ class KinematicsApp(tk.Tk):
         self.ek_right = ExtendedKinematics(100, 200, 200, 400, 200, 150)
 
     def update_plot(self):
+        if not hasattr(self, 'ek_left') or not hasattr(self, 'ek_right'):
+            return  # キネマティクスがまだセットアップされていない場合は早期リターン
+
         for leg, ek in [('left', self.ek_left), ('right', self.ek_right)]:
             current_angles = {
                 'theta1': self.sliders[leg]['theta1'].get(),
