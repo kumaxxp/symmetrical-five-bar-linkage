@@ -11,6 +11,11 @@ class KinematicsApp(tk.Tk):
         self.geometry('1400x1000')
         self.resizable(False, True)
 
+        # クラス属性として明示的に定義
+        self.scale = 0.4
+        self.offset_x = 0
+        self.offset_y = 0
+
         self.setup_ui()
         self.setup_kinematics()
         self.set_initial_slider_values()
@@ -130,9 +135,58 @@ class KinematicsApp(tk.Tk):
     def draw_kinematics(self, canvas, transform):
         canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
-        scale = min(canvas_width / 1200, canvas_height / 1200)
-        offset_x = canvas_width / 2
-        offset_y = canvas_height / 2 if not transform else canvas_height * 0.8
+
+        # リンク構造の描画
+        left_points = self.ek_left.format_result()
+        right_points = self.ek_right.format_result()
+
+        transformed_left_points = {}
+        transformed_right_points = {}
+
+        scale = self.scale
+
+        if transform:
+            # 左足の変換
+            angle_flower_left = self.angle_between_vectors((0, 0), (1, 0), left_points['E'], left_points['F'])
+            transformer_left = Transformation2D(origin=left_points['E'], angle=-angle_flower_left, translation=-left_points['E'])
+            transformed_left_points = {key: transformer_left.transform(value) for key, value in left_points.items()}
+
+            # 右足の変換
+            # 1. 左足のB1-B2ベクトルを計算
+            left_b1b2_vector = np.array(transformed_left_points['B2']) - np.array(transformed_left_points['B1'])
+            
+            # 2. 右足のB1-B2ベクトルを計算
+            right_b1b2_vector = np.array(right_points['B2']) - np.array(right_points['B1'])
+            
+            # 3. 回転角度を計算
+            angle = np.arctan2(left_b1b2_vector[1], left_b1b2_vector[0]) - np.arctan2(right_b1b2_vector[1], right_b1b2_vector[0])
+            angle_degrees = np.degrees(angle)
+            
+            # 4. 平行移動量を計算
+            translation = np.array(transformed_left_points['B1']) - np.array(right_points['B1'])
+
+            # 5. 変換を適用
+            transformer_right = Transformation2D(origin=right_points['B1'], angle=angle_degrees, translation=translation)
+            transformed_right_points = {key: transformer_right.transform(value) for key, value in right_points.items()}
+
+            # 変換時のスケールとオフセットの計算
+            all_points = list(transformed_left_points.values()) + list(transformed_right_points.values())
+            min_x = min(p[0] for p in all_points)
+            max_x = max(p[0] for p in all_points)
+            min_y = min(p[1] for p in all_points)
+            max_y = max(p[1] for p in all_points)
+            
+            width = max_x - min_x
+            height = max_y - min_y
+        #    scale = min(canvas_width / width, canvas_height / height) * 0.8
+            offset_x = canvas_width / 2
+            offset_y = canvas_height * 0.8
+        else:
+            transformed_left_points = left_points
+            transformed_right_points = right_points
+        #    scale = min(canvas_width / 1200, canvas_height / 1200)
+            offset_x = canvas_width / 2
+            offset_y = canvas_height / 2
 
         # グリッドを描画
         grid_color = "#E0E0E0"  # 薄いグレー
@@ -143,7 +197,7 @@ class KinematicsApp(tk.Tk):
             canvas.create_line(x + offset_x, 0, x + offset_x, canvas_height, fill=grid_color)
 
         # 横線を描画
-        for y in range(int(-offset_y), int(canvas_height - offset_y), grid_spacing):
+        for y in range(int(-offset_y), int(canvas_height - grid_spacing)):
             canvas.create_line(0, y + offset_y, canvas_width, y + offset_y, fill=grid_color)
 
         # X軸とY軸を描画（少し濃い色で）
@@ -168,41 +222,6 @@ class KinematicsApp(tk.Tk):
                 y = offset_y - i * grid_spacing
                 canvas.create_line(offset_x - 5, y, offset_x + 5, y, fill=axis_color)
                 canvas.create_text(offset_x - 20, y, text=str(i * 100), fill=label_color)
-
-        # リンク構造の描画
-        left_points = self.ek_left.format_result()
-        right_points = self.ek_right.format_result()
-
-        transformed_left_points = {}
-        transformed_right_points = {}
-
-        if transform:
-            # 左足の変換
-            angle_flower_left = self.angle_between_vectors((0, 0), (1, 0), left_points['E'], left_points['F'])
-            transformer_left = Transformation2D(origin=left_points['E'], angle=-angle_flower_left)
-            transformed_left_points = {key: transformer_left.transform(value) for key, value in left_points.items()}
-
-            # 右足の変換
-            # 1. 左足のB1-B2ベクトルを計算
-            left_b1b2_vector = np.array(transformed_left_points['B2']) - np.array(transformed_left_points['B1'])
-            
-            # 2. 右足のB1-B2ベクトルを計算
-            right_b1b2_vector = np.array(right_points['B2']) - np.array(right_points['B1'])
-            
-            # 3. 回転角度を計算
-            angle = np.arctan2(left_b1b2_vector[1], left_b1b2_vector[0]) - np.arctan2(right_b1b2_vector[1], right_b1b2_vector[0])
-            angle_degrees = np.degrees(angle)
-            
-            # 4. 平行移動量を計算
-            translation = np.array(transformed_left_points['B1']) - np.array(right_points['B1'])
-            
-            # 5. 変換を適用
-            transformer_right = Transformation2D(origin=right_points['B1'], angle=angle_degrees, translation=translation)
-            transformed_right_points = {key: transformer_right.transform(value) for key, value in right_points.items()}
-
-        else:
-            transformed_left_points = left_points
-            transformed_right_points = right_points
 
         for leg, points in [('left', transformed_left_points), ('right', transformed_right_points)]:
             for start, end, color in [('B1', 'M1', 'red'), ('M1', 'X', 'blue'), ('X', 'M2', 'green'),
