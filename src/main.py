@@ -149,7 +149,7 @@ class KinematicsApp(tk.Tk):
         # X軸とY軸を描画（少し濃い色で）
         axis_color = "#A0A0A0"  # 濃いめのグレー
         canvas.create_line(0, offset_y, canvas_width, offset_y, fill=axis_color, width=2)  # X軸
-        canvas.create_line(offset_x, 0, offset_x, fill=axis_color, width=2)  # Y軸
+        canvas.create_line(offset_x, 0, offset_x, canvas_height, fill=axis_color, width=2)  # Y軸
 
         # 軸のラベルを追加
         label_color = "#606060"  # ダークグレー
@@ -169,6 +169,7 @@ class KinematicsApp(tk.Tk):
                 canvas.create_line(offset_x - 5, y, offset_x + 5, y, fill=axis_color)
                 canvas.create_text(offset_x - 20, y, text=str(i * 100), fill=label_color)
 
+        # リンク構造の描画（以下は変更なし）
         for leg, ek in [('left', self.ek_left), ('right', self.ek_right)]:
             points = ek.format_result()
             if transform:
