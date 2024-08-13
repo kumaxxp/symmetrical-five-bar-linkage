@@ -182,12 +182,22 @@ class KinematicsApp(tk.Tk):
             transformer_left = Transformation2D(origin=left_points['E'], angle=-angle_flower_left)
             transformed_left_points = {key: transformer_left.transform(value) for key, value in left_points.items()}
 
-            # 右足の変換（左足のB2-B1を基準に）
-            angle_base = self.angle_between_vectors(
-                transformed_left_points['B2'], transformed_left_points['B1'],
-                right_points['B2'], right_points['B1']
-            )
-            transformer_right = Transformation2D(origin=right_points['B1'], angle=angle_base)
+            # 右足の変換
+            # 1. 左足のB1-B2ベクトルを計算
+            left_b1b2_vector = np.array(transformed_left_points['B2']) - np.array(transformed_left_points['B1'])
+            
+            # 2. 右足のB1-B2ベクトルを計算
+            right_b1b2_vector = np.array(right_points['B2']) - np.array(right_points['B1'])
+            
+            # 3. 回転角度を計算
+            angle = np.arctan2(left_b1b2_vector[1], left_b1b2_vector[0]) - np.arctan2(right_b1b2_vector[1], right_b1b2_vector[0])
+            angle_degrees = np.degrees(angle)
+            
+            # 4. 平行移動量を計算
+            translation = np.array(transformed_left_points['B1']) - np.array(right_points['B1'])
+            
+            # 5. 変換を適用
+            transformer_right = Transformation2D(origin=right_points['B1'], angle=angle_degrees, translation=translation)
             transformed_right_points = {key: transformer_right.transform(value) for key, value in right_points.items()}
 
         else:
