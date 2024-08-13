@@ -12,7 +12,7 @@ class KinematicsApp(tk.Tk):
         self.resizable(False, True)
 
         # クラス属性として明示的に定義
-        self.scale = 0.4
+        self.scale = 0.25
         self.offset_x = 0
         self.offset_y = 0
 
@@ -95,8 +95,8 @@ class KinematicsApp(tk.Tk):
         self.update_plot()
 
     def setup_kinematics(self):
-        self.ek_left = ExtendedKinematics(100, 200, 200, 400, 200, 150)
-        self.ek_right = ExtendedKinematics(100, 200, 200, 400, 200, 150)
+        self.ek_left = ExtendedKinematics(100, 200, 300, 400, 200, 150)
+        self.ek_right = ExtendedKinematics(100, 200, 300, 400, 200, 150)
 
     def update_plot(self):
         if not hasattr(self, 'ek_left') or not hasattr(self, 'ek_right'):
@@ -190,7 +190,7 @@ class KinematicsApp(tk.Tk):
 
         # グリッドを描画
         grid_color = "#E0E0E0"  # 薄いグレー
-        grid_spacing = 100  # グリッドの間隔（ピクセル単位）
+        grid_spacing = 25  # グリッドの間隔（ピクセル単位）
 
         # 縦線を描画
         for x in range(int(-offset_x), int(canvas_width - offset_x), grid_spacing):
