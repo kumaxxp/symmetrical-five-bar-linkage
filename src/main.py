@@ -169,16 +169,34 @@ class KinematicsApp(tk.Tk):
                 canvas.create_line(offset_x - 5, y, offset_x + 5, y, fill=axis_color)
                 canvas.create_text(offset_x - 20, y, text=str(i * 100), fill=label_color)
 
-        # リンク構造の描画（以下は変更なし）
-        for leg, ek in [('left', self.ek_left), ('right', self.ek_right)]:
-            points = ek.format_result()
-            if transform:
-                angle_flower = self.angle_between_vectors((0, 0), (1, 0), points['E'], points['F'])
-                transformer = Transformation2D(origin=points['E'], angle=-angle_flower)
-                points = {key: transformer.transform(value) for key, value in points.items()}
+        # リンク構造の描画
+        left_points = self.ek_left.format_result()
+        right_points = self.ek_right.format_result()
 
+        transformed_left_points = {}
+        transformed_right_points = {}
+
+        if transform:
+            # 左足の変換
+            angle_flower_left = self.angle_between_vectors((0, 0), (1, 0), left_points['E'], left_points['F'])
+            transformer_left = Transformation2D(origin=left_points['E'], angle=-angle_flower_left)
+            transformed_left_points = {key: transformer_left.transform(value) for key, value in left_points.items()}
+
+            # 右足の変換（左足のB2-B1を基準に）
+            angle_base = self.angle_between_vectors(
+                transformed_left_points['B2'], transformed_left_points['B1'],
+                right_points['B2'], right_points['B1']
+            )
+            transformer_right = Transformation2D(origin=right_points['B1'], angle=angle_base)
+            transformed_right_points = {key: transformer_right.transform(value) for key, value in right_points.items()}
+
+        else:
+            transformed_left_points = left_points
+            transformed_right_points = right_points
+
+        for leg, points in [('left', transformed_left_points), ('right', transformed_right_points)]:
             for start, end, color in [('B1', 'M1', 'red'), ('M1', 'X', 'blue'), ('X', 'M2', 'green'),
-                                      ('M2', 'B2', 'yellow'), ('X', 'E', 'magenta'), ('E', 'F', 'cyan')]:
+                                    ('M2', 'B2', 'yellow'), ('X', 'E', 'magenta'), ('E', 'F', 'cyan')]:
                 if points[start] is not None and points[end] is not None:
                     x1, y1 = self.transform_point(points[start], scale, offset_x, offset_y)
                     x2, y2 = self.transform_point(points[end], scale, offset_x, offset_y)
