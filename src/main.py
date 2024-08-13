@@ -15,7 +15,6 @@ class KinematicsApp(tk.Tk):
         self.setup_kinematics()
         self.set_initial_slider_values()
         self.last_angles = {'left': {}, 'right': {}}
-        self.update_plot()
 
         # 初期状態を計算
         self.initialize_kinematics()
@@ -105,6 +104,9 @@ class KinematicsApp(tk.Tk):
                 'thetaF': self.sliders[leg]['thetaF'].get()
             }
 
+            if not hasattr(self, 'last_angles'):
+                self.last_angles = {'left': {}, 'right': {}}
+
             if current_angles != self.last_angles.get(leg, {}):
                 ek.set_angles(**current_angles)
                 ek.compute_forward_kinematics()
@@ -131,6 +133,41 @@ class KinematicsApp(tk.Tk):
         scale = min(canvas_width / 1200, canvas_height / 1200)
         offset_x = canvas_width / 2
         offset_y = canvas_height / 2 if not transform else canvas_height * 0.8
+
+        # グリッドを描画
+        grid_color = "#E0E0E0"  # 薄いグレー
+        grid_spacing = 100  # グリッドの間隔（ピクセル単位）
+
+        # 縦線を描画
+        for x in range(int(-offset_x), int(canvas_width - offset_x), grid_spacing):
+            canvas.create_line(x + offset_x, 0, x + offset_x, canvas_height, fill=grid_color)
+
+        # 横線を描画
+        for y in range(int(-offset_y), int(canvas_height - offset_y), grid_spacing):
+            canvas.create_line(0, y + offset_y, canvas_width, y + offset_y, fill=grid_color)
+
+        # X軸とY軸を描画（少し濃い色で）
+        axis_color = "#A0A0A0"  # 濃いめのグレー
+        canvas.create_line(0, offset_y, canvas_width, offset_y, fill=axis_color, width=2)  # X軸
+        canvas.create_line(offset_x, 0, offset_x, fill=axis_color, width=2)  # Y軸
+
+        # 軸のラベルを追加
+        label_color = "#606060"  # ダークグレー
+        canvas.create_text(canvas_width - 20, offset_y - 20, text="X", fill=label_color)
+        canvas.create_text(offset_x + 20, 20, text="Y", fill=label_color)
+
+        # 目盛りを追加
+        for i in range(-5, 6):
+            if i != 0:
+                # X軸の目盛り
+                x = offset_x + i * grid_spacing
+                canvas.create_line(x, offset_y - 5, x, offset_y + 5, fill=axis_color)
+                canvas.create_text(x, offset_y + 20, text=str(i * 100), fill=label_color)
+
+                # Y軸の目盛り
+                y = offset_y - i * grid_spacing
+                canvas.create_line(offset_x - 5, y, offset_x + 5, y, fill=axis_color)
+                canvas.create_text(offset_x - 20, y, text=str(i * 100), fill=label_color)
 
         for leg, ek in [('left', self.ek_left), ('right', self.ek_right)]:
             points = ek.format_result()
