@@ -95,8 +95,8 @@ class KinematicsApp(tk.Tk):
         self.update_plot()
 
     def setup_kinematics(self):
-        self.ek_left = ExtendedKinematics(100, 200, 300, 400, 200, 150)
-        self.ek_right = ExtendedKinematics(100, 200, 300, 400, 200, 150)
+        self.ek_left = ExtendedKinematics(100, 200, 300, 400, 200, 300)
+        self.ek_right = ExtendedKinematics(100, 200, 300, 400, 200, 300)
 
     def update_plot(self):
         if not hasattr(self, 'ek_left') or not hasattr(self, 'ek_right'):
@@ -229,14 +229,46 @@ class KinematicsApp(tk.Tk):
                 if points[start] is not None and points[end] is not None:
                     x1, y1 = self.transform_point(points[start], scale, offset_x, offset_y)
                     x2, y2 = self.transform_point(points[end], scale, offset_x, offset_y)
-                    canvas.create_line(x1, y1, x2, y2, fill=color, width=2)
+                    # 右脚の色を薄くする
+                    if leg == 'right':
+                        color = self.lighten_color(color, amount=150)
+                        link_width = 2
+                    else:
+                        link_width = 4
+
+                    canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width)
 
             for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
                                     ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan']):
                 if points[point] is not None:
                     x, y = self.transform_point(points[point], scale, offset_x, offset_y)
+                    # 右脚の色を薄くする
+                    if leg == 'right':
+                        color = self.lighten_color(color, amount=150)
                     canvas.create_oval(x-3, y-3, x+3, y+3, fill=color)
-                    canvas.create_text(x+10, y+10, text=f'{leg} {point}', anchor='sw')
+                    # XY座標を表示
+                    coord_text = f'({points[point][0]:.0f}, {points[point][1]:.0f})'
+                    canvas.create_text(x+10, y+10, text=coord_text, anchor='sw')
+
+    @staticmethod
+    def lighten_color(color, amount=100):
+        # 色名を16進数に変換するディクショナリ
+        color_dict = {
+            'red': '#FF0000', 'blue': '#0000FF', 'green': '#00FF00',
+            'yellow': '#FFFF00', 'magenta': '#FF00FF', 'cyan': '#00FFFF'
+        }
+        
+        # 色名が与えられた場合、16進数に変換
+        if color in color_dict:
+            color = color_dict[color]
+        
+        # 16進数の場合の処理
+        if color.startswith('#'):
+            r, g, b = [int(color[i:i+2], 16) for i in (1, 3, 5)]
+            return f'#{min(255, r + amount):02x}{min(255, g + amount):02x}{min(255, b + amount):02x}'
+        
+        # 未知の色名の場合はそのまま返す
+        return color
 
     def transform_point(self, point, scale, offset_x, offset_y):
         return point[0] * scale + offset_x, -point[1] * scale + offset_y
