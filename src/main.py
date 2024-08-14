@@ -45,11 +45,11 @@ class KinematicsApp(tk.Tk):
         self.graph_frame = ttk.Frame(self.main_frame)
         self.graph_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.canvas1 = tk.Canvas(self.graph_frame, width=600, height=600)
-        self.canvas1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    #    self.canvas1 = tk.Canvas(self.graph_frame, width=600, height=600)
+    #    self.canvas1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.canvas2 = tk.Canvas(self.graph_frame, width=600, height=600)
-        self.canvas2.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        self.canvas2 = tk.Canvas(self.graph_frame, width=1000, height=600)
+        self.canvas2.pack(fill=tk.BOTH, expand=True)
 
         self.slider_frame = ttk.Frame(self.main_frame)
         self.slider_frame.pack(side=tk.RIGHT, fill=tk.Y)
@@ -95,8 +95,8 @@ class KinematicsApp(tk.Tk):
         self.update_plot()
 
     def setup_kinematics(self):
-        self.ek_left = ExtendedKinematics(100, 200, 300, 400, 200, 300)
-        self.ek_right = ExtendedKinematics(100, 200, 300, 400, 200, 300)
+        self.ek_left = ExtendedKinematics(100, 200, 450, 500, 300, 300)
+        self.ek_right = ExtendedKinematics(100, 200, 450, 500, 300, 300)
 
     def update_plot(self):
         if not hasattr(self, 'ek_left') or not hasattr(self, 'ek_right'):
@@ -117,16 +117,16 @@ class KinematicsApp(tk.Tk):
                 ek.compute_forward_kinematics()
                 self.last_angles[leg] = current_angles.copy()
 
-        self.draw_extended_kinematics()
+    #    self.draw_extended_kinematics()
         self.draw_transformed_kinematics()
 
         # キャンバスのサイズが変更された場合に再描画
-        self.canvas1.update()
+    #    self.canvas1.update()
         self.canvas2.update()
 
-    def draw_extended_kinematics(self):
-        self.canvas1.delete("all")
-        self.draw_kinematics(self.canvas1, False)
+    #def draw_extended_kinematics(self):
+    #    self.canvas1.delete("all")
+    #    self.draw_kinematics(self.canvas1, False)
 
     def draw_transformed_kinematics(self):
         self.canvas2.delete("all")
