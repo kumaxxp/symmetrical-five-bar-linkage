@@ -45,9 +45,6 @@ class KinematicsApp(tk.Tk):
         self.graph_frame = ttk.Frame(self.main_frame)
         self.graph_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-    #    self.canvas1 = tk.Canvas(self.graph_frame, width=600, height=600)
-    #    self.canvas1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
         self.canvas2 = tk.Canvas(self.graph_frame, width=1000, height=600)
         self.canvas2.pack(fill=tk.BOTH, expand=True)
 
@@ -68,8 +65,8 @@ class KinematicsApp(tk.Tk):
 
     def set_initial_slider_values(self):
         for leg in ['left', 'right']:
-            self.sliders[leg]['theta1'].set(-45)
-            self.sliders[leg]['theta2'].set(-135)
+            self.sliders[leg]['theta1'].set(-10)
+            self.sliders[leg]['theta2'].set(-100)
             self.sliders[leg]['thetaF'].set(-50)
 
     def create_slider_with_label(self, label_text, initial_value, parent_frame):
@@ -109,24 +106,13 @@ class KinematicsApp(tk.Tk):
                 'thetaF': self.sliders[leg]['thetaF'].get()
             }
 
-            if not hasattr(self, 'last_angles'):
-                self.last_angles = {'left': {}, 'right': {}}
-
             if current_angles != self.last_angles.get(leg, {}):
                 ek.set_angles(**current_angles)
                 ek.compute_forward_kinematics()
                 self.last_angles[leg] = current_angles.copy()
 
-    #    self.draw_extended_kinematics()
         self.draw_transformed_kinematics()
-
-        # キャンバスのサイズが変更された場合に再描画
-    #    self.canvas1.update()
         self.canvas2.update()
-
-    #def draw_extended_kinematics(self):
-    #    self.canvas1.delete("all")
-    #    self.draw_kinematics(self.canvas1, False)
 
     def draw_transformed_kinematics(self):
         self.canvas2.delete("all")
@@ -136,20 +122,19 @@ class KinematicsApp(tk.Tk):
         canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
 
-        # リンク構造の描画
-        left_points = self.ek_left.format_result()
-        right_points = self.ek_right.format_result()
-
-        transformed_left_points = {}
-        transformed_right_points = {}
+        left_points = self.ek_left.get_original_points()
+        right_points = self.ek_right.get_original_points()
 
         scale = self.scale
+        offset_x = canvas_width / 2
+        offset_y = canvas_height / 2
 
         if transform:
             # 左足の変換
             angle_flower_left = self.angle_between_vectors((0, 0), (1, 0), left_points['E'], left_points['F'])
             transformer_left = Transformation2D(origin=left_points['E'], angle=-angle_flower_left, translation=-left_points['E'])
-            transformed_left_points = {key: transformer_left.transform(value) for key, value in left_points.items()}
+            self.ek_left.apply_transformation(transformer_left)
+            transformed_left_points = self.ek_left.get_transformed_points()
 
             # 右足の変換
             # 1. 左足のB1-B2ベクトルを計算
@@ -167,26 +152,21 @@ class KinematicsApp(tk.Tk):
 
             # 5. 変換を適用
             transformer_right = Transformation2D(origin=right_points['B1'], angle=angle_degrees, translation=translation)
-            transformed_right_points = {key: transformer_right.transform(value) for key, value in right_points.items()}
-
-            # 変換時のスケールとオフセットの計算
-            all_points = list(transformed_left_points.values()) + list(transformed_right_points.values())
-            min_x = min(p[0] for p in all_points)
-            max_x = max(p[0] for p in all_points)
-            min_y = min(p[1] for p in all_points)
-            max_y = max(p[1] for p in all_points)
-            
-            width = max_x - min_x
-            height = max_y - min_y
-        #    scale = min(canvas_width / width, canvas_height / height) * 0.8
-            offset_x = canvas_width / 2
-            offset_y = canvas_height / 2
+            self.ek_right.apply_transformation(transformer_right)
+            transformed_right_points = self.ek_right.get_transformed_points()
         else:
             transformed_left_points = left_points
             transformed_right_points = right_points
-        #    scale = min(canvas_width / 1200, canvas_height / 1200)
-            offset_x = canvas_width / 2
-            offset_y = canvas_height / 2
+
+        self.draw_grid(canvas, offset_x, offset_y)
+
+        for leg, points in [('left', transformed_left_points), ('right', transformed_right_points)]:
+            self.draw_links(canvas, points, leg, scale, offset_x, offset_y)
+            self.draw_points(canvas, points, leg, scale, offset_x, offset_y)
+
+    def draw_grid(self, canvas, offset_x, offset_y):
+        canvas_width = canvas.winfo_width()
+        canvas_height = canvas.winfo_height()
 
         # グリッドを描画
         grid_color = "#E0E0E0"  # 薄いグレー
@@ -197,13 +177,13 @@ class KinematicsApp(tk.Tk):
             canvas.create_line(x + offset_x, 0, x + offset_x, canvas_height, fill=grid_color)
 
         # 横線を描画
-        for y in range(int(-offset_y), int(canvas_height - grid_spacing)):
+        for y in range(int(-offset_y), int(canvas_height - offset_y), grid_spacing):
             canvas.create_line(0, y + offset_y, canvas_width, y + offset_y, fill=grid_color)
 
         # X軸とY軸を描画（少し濃い色で）
         axis_color = "#A0A0A0"  # 濃いめのグレー
         canvas.create_line(0, offset_y, canvas_width, offset_y, fill=axis_color, width=2)  # X軸
-        canvas.create_line(offset_x, 0, offset_x, canvas_height, fill=axis_color, width=2)  # Y軸
+        canvas.create_line(offset_x, 0, offset_x, canvas_height, fill=axis_color)  # Y軸
 
         # 軸のラベルを追加
         label_color = "#606060"  # ダークグレー
@@ -214,41 +194,38 @@ class KinematicsApp(tk.Tk):
         for i in range(-5, 6):
             if i != 0:
                 # X軸の目盛り
-                x = offset_x + i * grid_spacing
+                x = offset_x + i * grid_spacing * 4
                 canvas.create_line(x, offset_y - 5, x, offset_y + 5, fill=axis_color)
                 canvas.create_text(x, offset_y + 20, text=str(i * 100), fill=label_color)
 
                 # Y軸の目盛り
-                y = offset_y - i * grid_spacing
+                y = offset_y - i * grid_spacing * 4
                 canvas.create_line(offset_x - 5, y, offset_x + 5, y, fill=axis_color)
                 canvas.create_text(offset_x - 20, y, text=str(i * 100), fill=label_color)
 
-        for leg, points in [('left', transformed_left_points), ('right', transformed_right_points)]:
-            for start, end, color in [('B1', 'M1', 'red'), ('M1', 'X', 'blue'), ('X', 'M2', 'green'),
-                                    ('M2', 'B2', 'yellow'), ('X', 'E', 'magenta'), ('E', 'F', 'cyan')]:
-                if points[start] is not None and points[end] is not None:
-                    x1, y1 = self.transform_point(points[start], scale, offset_x, offset_y)
-                    x2, y2 = self.transform_point(points[end], scale, offset_x, offset_y)
-                    # 右脚の色を薄くする
-                    if leg == 'right':
-                        color = self.lighten_color(color, amount=150)
-                        link_width = 2
-                    else:
-                        link_width = 4
+    def draw_links(self, canvas, points, leg, scale, offset_x, offset_y):
+        for start, end, color in [('B1', 'M1', 'red'), ('M1', 'X', 'blue'), ('X', 'M2', 'green'),
+                                  ('M2', 'B2', 'yellow'), ('X', 'E', 'magenta'), ('E', 'F', 'cyan')]:
+            if points[start] is not None and points[end] is not None:
+                x1, y1 = self.transform_point(points[start], scale, offset_x, offset_y)
+                x2, y2 = self.transform_point(points[end], scale, offset_x, offset_y)
+                if leg == 'right':
+                    color = self.lighten_color(color, amount=150)
+                    link_width = 2
+                else:
+                    link_width = 4
+                canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width)
 
-                    canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width)
-
-            for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
-                                    ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan']):
-                if points[point] is not None:
-                    x, y = self.transform_point(points[point], scale, offset_x, offset_y)
-                    # 右脚の色を薄くする
-                    if leg == 'right':
-                        color = self.lighten_color(color, amount=150)
-                    canvas.create_oval(x-3, y-3, x+3, y+3, fill=color)
-                    # XY座標を表示
-                    coord_text = f'({points[point][0]:.0f}, {points[point][1]:.0f})'
-                    canvas.create_text(x+10, y+10, text=coord_text, anchor='sw')
+    def draw_points(self, canvas, points, leg, scale, offset_x, offset_y):
+        for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
+                                ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan']):
+            if points[point] is not None:
+                x, y = self.transform_point(points[point], scale, offset_x, offset_y)
+                if leg == 'right':
+                    color = self.lighten_color(color, amount=150)
+                canvas.create_oval(x-3, y-3, x+3, y+3, fill=color)
+                coord_text = f'({points[point][0]:.0f}, {points[point][1]:.0f})'
+                canvas.create_text(x+10, y+10, text=coord_text, anchor='sw')
 
     @staticmethod
     def lighten_color(color, amount=100):

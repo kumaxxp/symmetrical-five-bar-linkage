@@ -4,7 +4,7 @@ from linkage_kinematics import ForwardKinematics
 
 def calculate_P3(P1, P2, L, theta):
     """
-    P1からP2へのベクトルとP1からP3へのベクトルを用いてPの位置を計算する関数
+    P1からP2へのベクトルとP1からP3へのベクトルを用いてP3の位置を計算する関数
     :param P1: P1の座標 (x1, y1)
     :param P2: P2の座標 (x2, y2)
     :param L: P1からP3へのベクトルの長さ
@@ -15,9 +15,6 @@ def calculate_P3(P1, P2, L, theta):
     x1, y1 = P1
     x2, y2 = P2
     v = np.array([x2 - x1, y2 - y1])
-    
-    # ベクトルvの長さを計算
-    v_length = np.linalg.norm(v)
     
     # ステップ2: 内積と角度の関係
     # vの角度を計算
@@ -46,7 +43,10 @@ class ExtendedKinematics(ForwardKinematics):
         """
         super().__init__(Yb, l, b, m, e)
         self.f = f
-        self.F = None  # 追加リンクの接続点
+        self.F = None
+        self.thetaF = 0
+        self.transformer = None
+        self.transformed_points = {}
 
     def set_angles(self, theta1, theta2, thetaF):
         """
@@ -80,10 +80,14 @@ class ExtendedKinematics(ForwardKinematics):
         :return: 順運動学の結果
         """
         result = super().calculate()
-        result["F"] = self.F  # Fの位置を結果に追加
+        result["F"] = self.F
         return result
 
     def format_result(self):
+        """
+        計算結果をフォーマットして返す
+        :return: フされた結果
+        """
         return {
             "B1": self.B1,
             "M1": self.M1,
@@ -96,49 +100,30 @@ class ExtendedKinematics(ForwardKinematics):
             "X2": self.X2
         }
 
-def plot_extended_kinematics(ek):
-    """
-    拡張運動学の結果をプロットする
-    :param ek: ExtendedKinematics インスタンス
-    """
-    result = ek.calculate()
+    def apply_transformation(self, transformer):
+        """
+        座標変換を適用する
+        :param transformer: 変換器オブジェクト
+        """
+        self.transformer = transformer
+        self.transformed_points = {
+            key: self.transformer.transform(value)
+            for key, value in self.format_result().items()
+        }
 
-    if isinstance(result, str):
-        #print(result)
-        return
+    def get_transformed_points(self):
+        """
+        変換された座標を取得する
+        :return: 変換された座標
+        """
+        return self.transformed_points
 
-    B1, M1, X, M2, B2, E, X1, X2, F = result["B1"], result["M1"], result["X"], result["M2"], result["B2"], result["E"], result["X1"], result["X2"], result["F"]
-
-    plt.figure()
-    if B1 is not None and M1 is not None:
-        plt.plot([B1[0], M1[0]], [B1[1], M1[1]], 'r-o', label='B1-M1')
-    if X is not None and M1 is not None:
-        plt.plot([M1[0], X[0]], [M1[1], X[1]], 'b-o', label='M1-X')
-    if X is not None and M2 is not None:
-        plt.plot([X[0], M2[0]], [X[1], M2[1]], 'g-o', label='X-M2')
-    if M2 is not None and B2 is not None:
-        plt.plot([M2[0], B2[0]], [M2[1], B2[1]], 'y-o', label='M2-B2')
-    if X is not None and E is not None:
-        plt.plot([X[0], E[0]], [X[1], E[1]], 'mo-', label='X-E')
-    if E is not None and F is not None:
-        plt.plot([E[0], F[0]], [E[1], F[1]], 'c-o', label='E-F')
-
-    # 各点をプロット
-    for point, color, label in zip([B1, M1, X, M2, B2, E, F],
-                                    ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan'],
-                                    ['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F']):
-        if point is not None:
-            plt.scatter(*point, color=color, zorder=5)
-            plt.text(point[0], point[1], label, fontsize=12, ha='right')
-
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.title('Extended Kinematics Visualization')
-    plt.grid(True)
-    plt.legend()
-    plt.xlim(-600, 600)
-    plt.ylim(-1000, 200)
-    plt.show()
+    def get_original_points(self):
+        """
+        元の座標を取得する
+        :return: 元の座標
+        """
+        return self.format_result()
 
 if __name__ == "__main__":
     # サンプルの値を設定
@@ -159,5 +144,7 @@ if __name__ == "__main__":
     ek.set_angles(theta1, theta2, thetaF)
     ek.compute_forward_kinematics()
 
-    # 拡張運動学の結果をプロット
-    plot_extended_kinematics(ek)
+    # 結果を表示
+    result = ek.calculate()
+    for key, value in result.items():
+        print(f"{key}: {value}")
