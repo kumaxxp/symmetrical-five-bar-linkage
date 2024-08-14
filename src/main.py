@@ -180,7 +180,7 @@ class KinematicsApp(tk.Tk):
             height = max_y - min_y
         #    scale = min(canvas_width / width, canvas_height / height) * 0.8
             offset_x = canvas_width / 2
-            offset_y = canvas_height * 0.8
+            offset_y = canvas_height / 2
         else:
             transformed_left_points = left_points
             transformed_right_points = right_points
