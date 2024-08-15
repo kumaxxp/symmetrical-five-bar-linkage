@@ -1,6 +1,8 @@
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 from linkage_kinematics import ForwardKinematics
+from transformation import Transformation2D
 
 def calculate_P3(P1, P2, L, theta):
     """
@@ -47,6 +49,7 @@ class ExtendedKinematics(ForwardKinematics):
         self.thetaF = 0
         self.points = {}
         self.transformed_points = {}
+        self.rotated_points = {}
         self.B1 = B1
         self.B2 = B2
         self.theta1 = 0
@@ -71,7 +74,7 @@ class ExtendedKinematics(ForwardKinematics):
         super().compute_forward_kinematics()
         self.F = self.calculate_F()
         self.points = self.format_result()
-        self.transformed_points = self.points.copy()
+    #    self.transformed_points = self.points.copy()
 
     def calculate_F(self):
         """
@@ -89,6 +92,23 @@ class ExtendedKinematics(ForwardKinematics):
         result = super().calculate()
         result["F"] = self.F
         return result
+    
+    def calculate_rotated_points(self):
+        angle_flower = math.degrees(self.angle_between_vectors((0, 0), (1, 0), self.points['E'], self.points['F']))
+        transformer = Transformation2D(origin=self.points['E'], angle=-angle_flower, translation=-np.array(self.points['E']))
+        self.rotated_points = {key: transformer.transform_point(value) for key, value in self.points.items()}
+    
+    def get_rotated_points(self):
+        return self.rotated_points
+    
+    def get_points(self):
+        return self.points
+
+    @staticmethod
+    def angle_between_vectors(p1, p2, p3, p4):
+        v1 = np.array(p2) - np.array(p1)
+        v2 = np.array(p4) - np.array(p3)
+        return math.atan2(np.cross(v1, v2), np.dot(v1, v2))
 
     def format_result(self):
         """
@@ -129,22 +149,26 @@ class ExtendedKinematics(ForwardKinematics):
         """
         return self.points
 
-    def get_link_angle(self, link_index):
+    def get_link_angle(self, vect):
         """
-        指定されたリンクの角度を取得する
-        :param link_index: リンクのインデックス (0: B1-M1, 1: M1-X, 2: X-E, 3: E-F)
+        指定された頂点から次の頂点への角度を取得する
+        :param vect: 開始頂点の名前 ('B1', 'B2', 'E')
         :return: リンクの角度（ラジアン）
         """
-        if link_index == 0:
+        link_order = ['B1', 'B2', 'E']
+        
+        if vect not in link_order[:-1]:
+            raise ValueError("Invalid vect point")
+                
+        if vect == 'B1':
             return self.theta1
-        elif link_index == 1:
-            return np.arctan2(self.X[1] - self.M1[1], self.X[0] - self.M1[0])
-        elif link_index == 2:
-            return np.arctan2(self.E[1] - self.X[1], self.E[0] - self.X[0])
-        elif link_index == 3:
+        elif vect == 'B2':
+            return self.theta2
+        elif vect == 'E':
             return self.thetaF
         else:
-            raise ValueError("Invalid link index")
+            raise ValueError("Invalid vect point")
+
 
     def get_link_points(self):
         """
@@ -199,6 +223,3 @@ if __name__ == "__main__":
     for key, value in result.items():
         print(f"{key}: {value}")
 
-    # リ度を表示
-    for i in range(4):
-        print(f"Link {i} angle: {np.degrees(ek.get_link_angle(i)):.2f} degrees")

@@ -57,10 +57,21 @@ class Hip:
         self.left_leg.apply_transformation(hip_transformer)
         self.right_leg.apply_transformation(hip_transformer)
 
+    def compute_link_angles(self):
+        # とりあえず、左の足を動かす
+        self.left_leg.calculate_rotated_points()
+        self.right_leg.calculate_rotated_points()
+
     def get_transformed_points(self):
         return {
             'left': self.left_leg.get_transformed_points(),
             'right': self.right_leg.get_transformed_points()
+        }
+    
+    def get_rotated_points(self):
+        return {
+            'left': self.left_leg.get_rotated_points(),
+            'right': self.right_leg.get_rotated_points()
         }
 
     @staticmethod
