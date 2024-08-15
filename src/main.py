@@ -195,7 +195,21 @@ class KinematicsApp(tk.Tk):
 
     # その他のメソッド（draw_grid, draw_links, draw_points, etc.）は同じまま
 
+    def transform_point(self, point, scale, offset_x, offset_y):
+        return (point[0] * scale + offset_x, -point[1] * scale + offset_y)
 
+    def lighten_color(self, color, amount=150):
+        # 色名を16進数カラーコードに変換
+        color_code = self.winfo_rgb(color)
+        r, g, b = [x // 256 for x in color_code]
+
+        # 各成分を明るくする
+        r = min(255, r + amount)
+        g = min(255, g + amount)
+        b = min(255, b + amount)
+
+        # RGB 値を16進数のカラーコードに戻す
+        return f'#{r:02x}{g:02x}{b:02x}'
 
 if __name__ == '__main__':
     app = KinematicsApp()
