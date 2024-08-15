@@ -60,9 +60,9 @@ class ExtendedKinematics(ForwardKinematics):
         :param thetaF: X-E-F の角度 (度)
         """
         super().set_angles(theta1, theta2)
-        self.thetaF = np.radians(thetaF)
-        self.theta1 = np.radians(theta1)
-        self.theta2 = np.radians(theta2)
+        self.thetaF = thetaF
+        self.theta1 = theta1
+        self.theta2 = theta2
 
     def compute_forward_kinematics(self):
         """
@@ -181,8 +181,8 @@ if __name__ == "__main__":
     m = 400
     e = 200
     f = 150
-    B1 = (100, 200)
-    B2 = (-100, 200)
+    B1 = (100, -100)
+    B2 = (-100, -100)
 
     # 拡張運動学インスタンス作成
     ek = ExtendedKinematics(b, m, e, f, B1, B2)

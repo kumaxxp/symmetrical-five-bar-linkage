@@ -13,7 +13,7 @@ class KinematicsApp(tk.Tk):
         self.resizable(False, True)
 
         # クラス属性として明示的に定義
-        self.scale = 0.25
+        self.scale = 1.0
         self.offset_x = 0
         self.offset_y = 0
 
@@ -29,8 +29,11 @@ class KinematicsApp(tk.Tk):
         self.after(100, self.update_plot)        
 
     def setup_kinematics(self):
-        left_leg = ExtendedKinematics(100, 200, 450, 500, 300, 300)
-        right_leg = ExtendedKinematics(100, 200, 450, 500, 300, 300)
+        B1 = (100, 400)
+        B2 = (-100, 400)
+
+        left_leg = ExtendedKinematics(100, 200, 300, 200, B1, B2)
+        right_leg = ExtendedKinematics(100, 200, 300, 200, B1, B2)
         self.hip = Hip(left_leg, right_leg)
 
         # 初期角度を設定（例として値を設定していますが、必要に応じて調整してください）
