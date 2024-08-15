@@ -80,7 +80,7 @@ class ExtendedKinematics(ForwardKinematics):
         if self.E is None or self.X is None:
             raise ValueError("EまたはX位置が計算されていません。")
 
-        return calculate_P3(self.E, self.X, self.f, np.degrees(self.thetaF))
+        return calculate_P3(self.E, self.X, self.f, self.thetaF)
 
     def calculate(self):
         """

@@ -38,8 +38,8 @@ class KinematicsApp(tk.Tk):
 
         # 初期角度を設定（例として値を設定していますが、必要に応じて調整してください）
         self.initial_angles = {
-            'left': {'theta1': -10, 'theta2': -100, 'thetaF': -50},
-            'right': {'theta1': -10, 'theta2': -100, 'thetaF': -50}
+            'left': {'theta1': -10, 'theta2': -120, 'thetaF': -50},
+            'right': {'theta1': -10, 'theta2': -120, 'thetaF': -50}
         }
 
         # 初期角度を設定
