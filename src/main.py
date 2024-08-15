@@ -31,17 +31,17 @@ class KinematicsApp(tk.Tk):
         self.after(100, self.update_plot)        
 
     def setup_kinematics(self):
-        B1 = (100, 100 + 200)
+        B1 = (100, -100 + 200)
         B2 = (-100, -100 + 200)
 
-        left_leg = ExtendedKinematics(300, 400, 200, 150, B1, B2)
-        right_leg = ExtendedKinematics(300, 400, 200, 150, B1, B2)
+        left_leg = ExtendedKinematics(350, 400, 200, 200, B1, B2)
+        right_leg = ExtendedKinematics(350, 400, 200, 200, B1, B2)
         self.hip = Hip(left_leg, right_leg)
 
         # 初期角度を設定（例として値を設定していますが、必要に応じて調整してください）
         self.initial_angles = {
-            'left': {'theta1': -10, 'theta2': -120, 'thetaF': -50},
-            'right': {'theta1': -10, 'theta2': -120, 'thetaF': -50}
+            'left': {'theta1': -50, 'theta2': -120, 'thetaF': -60},
+            'right': {'theta1': -50, 'theta2': -120, 'thetaF': -60}
         }
 
         # 初期角度を設定
@@ -124,18 +124,6 @@ class KinematicsApp(tk.Tk):
     def draw_transformed_kinematics(self):
         self.canvas2.delete("all")
         self.draw_kinematics(self.canvas2)
-        self.draw_ground(self.canvas2)
-
-    def draw_ground(self, canvas):
-        canvas_width = canvas.winfo_width()
-        canvas_height = canvas.winfo_height()
-        offset_x = canvas_width / 2
-        offset_y = canvas_height / 2
-
-        # 地面の線を描画
-        x1, y1 = self.transform_point((-1000, 0), self.scale, offset_x, offset_y)
-        x2, y2 = self.transform_point((1000, 0), self.scale, offset_x, offset_y)
-        canvas.create_line(x1, y1, x2, y2, fill="brown", width=2)
 
     def calculate_link_angles(self):
         transformed_points = self.hip.get_transformed_points()
