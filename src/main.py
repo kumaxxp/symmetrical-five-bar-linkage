@@ -31,8 +31,8 @@ class KinematicsApp(tk.Tk):
         self.after(100, self.update_plot)        
 
     def setup_kinematics(self):
-        B1 = (100, 400)
-        B2 = (-100, 400)
+        B1 = (100, 100 + 200)
+        B2 = (-100, -100 + 200)
 
         left_leg = ExtendedKinematics(300, 400, 200, 150, B1, B2)
         right_leg = ExtendedKinematics(300, 400, 200, 150, B1, B2)

@@ -95,9 +95,14 @@ class ExtendedKinematics(ForwardKinematics):
     
     def calculate_rotated_points(self, pointSt1, pointEd1, pointSt2, pointEd2):
         angle_flower = math.degrees(self.angle_between_vectors(pointSt1, pointEd1, pointSt2, pointEd2))
+        #transformer = Transformation2D(origin=pointSt1, angle=angle_flower, translation=-np.array(pointSt1))
         transformer = Transformation2D(origin=pointSt1, angle=angle_flower, translation=-np.array(pointSt1))
         self.rotated_points = {key: transformer.transform_point(value) for key, value in self.points.items()}
-    
+
+    def calculate_translate_points(self, point_translate):
+        # 回転後にポイントをシフトさせる
+        self.rotated_points = {key: point_translate + value for key, value in self.rotated_points.items()}
+
     def get_rotated_points(self):
         return self.rotated_points
     

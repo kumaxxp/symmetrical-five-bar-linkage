@@ -39,9 +39,11 @@ class Hip:
         # 左脚の回転後のポイント(B1,B2)
         rotate_points = self.left_leg.get_rotated_points()
         
-        # 右脚の回転（B1,B2中心）
+        # 右脚の回転（B1,B2中心）。B1,B2に向かって平行移動
         points = self.right_leg.get_original_points()
-        self.right_leg.calculate_rotated_points(points['B2'], points['B1'], rotate_points['B1'], rotate_points['B2'])
+        self.right_leg.calculate_rotated_points( points['B2'], points['B1'], rotate_points['B2'], rotate_points['B1'])
+        self.right_leg.calculate_translate_points( rotate_points['B2'])
+
 
     def compute_link_angles(self):
         # とりあえず、左の足を動かす
