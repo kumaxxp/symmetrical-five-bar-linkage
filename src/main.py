@@ -125,7 +125,9 @@ class KinematicsApp(tk.Tk):
         self.canvas2.delete("all")
         self.draw_kinematics(self.canvas2)
         self.draw_ground(self.canvas2)
-        self.calculate_link_angles()ground(self, canvas):
+        self.calculate_link_angles()
+
+    def draw_ground(self, canvas):
         canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
         offset_x = canvas_width / 2
@@ -134,11 +136,24 @@ class KinematicsApp(tk.Tk):
         # 地面の線を描画
         x1, y1 = self.transform_point((-1000, 0), self.scale, offset_x, offset_y)
         x2, y2 = self.transform_point((1000, 0), self.scale, offset_x, offset_y)
-        canvas.create_line(x1, y1, x2, y2, fill="brown", width=2)
+        
+        # 地面の傾きを考慮
+        angle = self.ground_angle
+        mid_x = (x1 + x2) / 2
+        mid_y = (y1 + y2) / 2
+        dx = (x2 - x1) / 2
+        dy = dx * math.tan(angle)
+        
+        new_x1 = mid_x - dx
+        new_y1 = mid_y - dy
+        new_x2 = mid_x + dx
+        new_y2 = mid_y + dy
+        
+        canvas.create_line(new_x1, new_y1, new_x2, new_y2, fill="brown", width=2)
 
         # 地面の角度を表示
         angle_text = f"Ground angle: {math.degrees(self.ground_angle):.1f}°"
-        canvas.create_text(50, 20, text=angle_text, anchor='nw')
+        canvas.create_text(50, 20, angle_text, anchor='nw')
 
     def calculate_link_angles(self):
         transformed_points = self.hip.get_transformed_points()
@@ -160,7 +175,7 @@ class KinematicsApp(tk.Tk):
                     end_point = transformed_points[leg]['B2']
                 elif i == 4:
                     start_point = transformed_points[leg]['X']
-                    end_point =leg]['F']
+                    end_point = transformed_points[leg]['F']
 
                 if start_point is not None and end_point is not None:
                     link_angle = math.atan2(end_point[1] - start_point[1], end_point[0] - start_point[0])
