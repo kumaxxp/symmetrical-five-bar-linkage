@@ -44,24 +44,20 @@ def calculate_interior_angle_sum(points):
     return angle_sum
 
 class ForwardKinematics:
-    def __init__(self, Yb, l, b, m, e):
+    def __init__(self, b, m, e, B1, B2):
         """
         初期化メソッド
-        :param Yb: B1, B2 の Y 座標
-        :param l: B1 から B2 までの距離
         :param b: B1-M1 および B2-M2 のリンク長
         :param m: M1-X および M2-X のリンク長
         :param e: X-E の距離
         """
-        self.Yb = Yb
-        self.l = l
         self.b = b
         self.m = m
         self.e = e
 
         # B1, B2 の座標を設定
-        self.B1 = np.array([self.l / 2, self.Yb])
-        self.B2 = np.array([-self.l / 2, self.Yb])
+        self.B1 = B1
+        self.B2 = B2
         
         self.M1 = None
         self.M2 = None
@@ -297,14 +293,14 @@ def plot_kinematics(fk):
 
 if __name__ == "__main__":
     # サンプルの値を設定
-    Yb = 100  # B1, B2 の Y 座標
-    l = 200    # B1 から B2 までの距離
     b = 200     # B1-M1 および B2-M2 のリンク長
     m = 400    # M1-X および M2-X のリンク長
     e = 200     # X-E の距離
+    B1 = (100, -100)
+    B2 = (-100, -100)
     
     # 順運動学インスタンスの作成
-    fk = ForwardKinematics(Yb, l, b, m, e)
+    fk = ForwardKinematics(b, m, e, B1, B2)
     
     # モーターの角度を設定 (サンプル値)
     theta1 = -45
