@@ -32,8 +32,8 @@ class KinematicsApp(tk.Tk):
         B1 = (100, 400)
         B2 = (-100, 400)
 
-        left_leg = ExtendedKinematics(100, 200, 300, 200, B1, B2)
-        right_leg = ExtendedKinematics(100, 200, 300, 200, B1, B2)
+        left_leg = ExtendedKinematics(300, 400, 200, 150, B1, B2)
+        right_leg = ExtendedKinematics(300, 400, 200, 150, B1, B2)
         self.hip = Hip(left_leg, right_leg)
 
         # 初期角度を設定（例として値を設定していますが、必要に応じて調整してください）
