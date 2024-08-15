@@ -3,6 +3,7 @@ from tkinter import ttk
 import numpy as np
 from extended_kinematics import ExtendedKinematics
 from transformation import Transformation2D
+from hip import Hip
 
 class KinematicsApp(tk.Tk):
     def __init__(self):
@@ -18,7 +19,7 @@ class KinematicsApp(tk.Tk):
 
         self.setup_ui()
         self.setup_kinematics()
-        self.set_initial_slider_values()
+        self.set_initial_angles()
         self.last_angles = {'left': {}, 'right': {}}
 
         # 初期状態を計算
@@ -27,142 +28,102 @@ class KinematicsApp(tk.Tk):
         # キャンバスが描画された後にupdate_plotを呼び出す
         self.after(100, self.update_plot)        
 
+    def setup_kinematics(self):
+        left_leg = ExtendedKinematics(100, 200, 450, 500, 300, 300)
+        right_leg = ExtendedKinematics(100, 200, 450, 500, 300, 300)
+        self.hip = Hip(left_leg, right_leg)
+
+        # 初期角度を設定（例として値を設定していますが、必要に応じて調整してください）
+        self.initial_angles = {
+            'left': {'theta1': -10, 'theta2': -100, 'thetaF': -50},
+            'right': {'theta1': -10, 'theta2': -100, 'thetaF': -50}
+        }
+
+        # 初期角度を設定
+        for leg in ['left', 'right']:
+            self.hip.set_leg_angles(leg, **self.initial_angles[leg])
+
+    def set_initial_angles(self):
+        for leg in ['left', 'right']:
+            for angle, value in self.initial_angles[leg].items():
+                self.sliders[leg][angle].set(value)
+
     def initialize_kinematics(self):
-        for leg, ek in [('left', self.ek_left), ('right', self.ek_right)]:
+        for leg in ['left', 'right']:
             initial_angles = {
                 'theta1': self.sliders[leg]['theta1'].get(),
                 'theta2': self.sliders[leg]['theta2'].get(),
                 'thetaF': self.sliders[leg]['thetaF'].get()
             }
-            ek.set_angles(**initial_angles)
-            ek.compute_forward_kinematics()
+            self.hip.set_leg_angles(leg, **initial_angles)
             self.last_angles[leg] = initial_angles.copy()
+            self.hip.compute_leg_positions()
 
     def setup_ui(self):
-        self.main_frame = ttk.Frame(self)
-        self.main_frame.pack(fill=tk.BOTH, expand=True)
+        # メインフレームの作成
+        main_frame = ttk.Frame(self)
+        main_frame.pack(fill=tk.BOTH, expand=True)
 
-        self.graph_frame = ttk.Frame(self.main_frame)
-        self.graph_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        # 左側のフレーム（スライダー用）
+        left_frame = ttk.Frame(main_frame)
+        left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
 
-        self.canvas2 = tk.Canvas(self.graph_frame, width=1000, height=600)
+        # 右側のフレーム（キャンバス用）
+        right_frame = ttk.Frame(main_frame)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # スライダーの設定
+        self.sliders = {'left': {}, 'right': {}}
+        for leg in ['left', 'right']:
+            leg_frame = ttk.LabelFrame(left_frame, text=f"{leg.capitalize()} Leg")
+            leg_frame.pack(fill=tk.X, padx=5, pady=5)
+            for angle in ['theta1', 'theta2', 'thetaF']:
+                slider = ttk.Scale(leg_frame, from_=-180, to=180, orient=tk.HORIZONTAL)
+                slider.pack(fill=tk.X, padx=5, pady=5)
+                self.sliders[leg][angle] = slider
+                ttk.Label(leg_frame, text=angle).pack()
+
+        # キャンバスの設定
+        self.canvas2 = tk.Canvas(right_frame, bg='white')
         self.canvas2.pack(fill=tk.BOTH, expand=True)
 
-        self.slider_frame = ttk.Frame(self.main_frame)
-        self.slider_frame.pack(side=tk.RIGHT, fill=tk.Y)
-
-        self.sliders = {}  # ここで self.sliders を初期化
-        for leg in ['left', 'right']:
-            leg_frame = ttk.LabelFrame(self.slider_frame, text=f"{leg.capitalize()} Leg")
-            leg_frame.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
-            self.sliders[leg] = {}
-            for angle in ['theta1', 'theta2', 'thetaF']:
-                self.sliders[leg][angle] = self.create_slider_with_label(
-                    f"{leg.capitalize()} {angle}", 
-                    0,
-                    leg_frame
-                )
-
-    def set_initial_slider_values(self):
-        for leg in ['left', 'right']:
-            self.sliders[leg]['theta1'].set(-10)
-            self.sliders[leg]['theta2'].set(-100)
-            self.sliders[leg]['thetaF'].set(-50)
-
-    def create_slider_with_label(self, label_text, initial_value, parent_frame):
-        frame = ttk.Frame(parent_frame)
-        frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
-
-        label = ttk.Label(frame, text=label_text)
-        label.pack(side=tk.LEFT)
-
-        value_label = ttk.Label(frame, text=str(initial_value))
-        value_label.pack(side=tk.RIGHT)
-
-        slider = ttk.Scale(frame, from_=-180, to=180, orient=tk.HORIZONTAL, 
-                           command=lambda v: self.update_slider_value(v, value_label),
-                           length=200)
-        slider.set(initial_value)
-        slider.pack(side=tk.LEFT, fill=tk.X, expand=True)
-
-        return slider
-
-    def update_slider_value(self, value, value_label):
-        value_label.config(text=str(int(float(value))))
-        self.update_plot()
-
-    def setup_kinematics(self):
-        self.ek_left = ExtendedKinematics(100, 200, 450, 500, 300, 300)
-        self.ek_right = ExtendedKinematics(100, 200, 450, 500, 300, 300)
+        # 更新ボタン
+        update_button = ttk.Button(left_frame, text="Update", command=self.update_plot)
+        update_button.pack(pady=10)
 
     def update_plot(self):
-        if not hasattr(self, 'ek_left') or not hasattr(self, 'ek_right'):
-            return  # キネマティクスがまだセットアップされていない場合は早期リターン
-
-        for leg, ek in [('left', self.ek_left), ('right', self.ek_right)]:
+        for leg in ['left', 'right']:
             current_angles = {
                 'theta1': self.sliders[leg]['theta1'].get(),
                 'theta2': self.sliders[leg]['theta2'].get(),
                 'thetaF': self.sliders[leg]['thetaF'].get()
             }
-
             if current_angles != self.last_angles.get(leg, {}):
-                ek.set_angles(**current_angles)
-                ek.compute_forward_kinematics()
+                self.hip.set_leg_angles(leg, **current_angles)
                 self.last_angles[leg] = current_angles.copy()
 
+        self.hip.compute_leg_positions()
         self.draw_transformed_kinematics()
         self.canvas2.update()
 
     def draw_transformed_kinematics(self):
         self.canvas2.delete("all")
-        self.draw_kinematics(self.canvas2, True)
+        self.draw_kinematics(self.canvas2)
 
-    def draw_kinematics(self, canvas, transform):
+    def draw_kinematics(self, canvas):
         canvas_width = canvas.winfo_width()
         canvas_height = canvas.winfo_height()
-
-        left_points = self.ek_left.get_original_points()
-        right_points = self.ek_right.get_original_points()
 
         scale = self.scale
         offset_x = canvas_width / 2
         offset_y = canvas_height / 2
 
-        if transform:
-            # 左足の変換
-            angle_flower_left = self.angle_between_vectors((0, 0), (1, 0), left_points['E'], left_points['F'])
-            transformer_left = Transformation2D(origin=left_points['E'], angle=-angle_flower_left, translation=-left_points['E'])
-            self.ek_left.apply_transformation(transformer_left)
-            transformed_left_points = self.ek_left.get_transformed_points()
-
-            # 右足の変換
-            # 1. 左足のB1-B2ベクトルを計算
-            left_b1b2_vector = np.array(transformed_left_points['B2']) - np.array(transformed_left_points['B1'])
-            
-            # 2. 右足のB1-B2ベクトルを計算
-            right_b1b2_vector = np.array(right_points['B2']) - np.array(right_points['B1'])
-            
-            # 3. 回転角度を計算
-            angle = np.arctan2(left_b1b2_vector[1], left_b1b2_vector[0]) - np.arctan2(right_b1b2_vector[1], right_b1b2_vector[0])
-            angle_degrees = np.degrees(angle)
-            
-            # 4. 平行移動量を計算
-            translation = np.array(transformed_left_points['B1']) - np.array(right_points['B1'])
-
-            # 5. 変換を適用
-            transformer_right = Transformation2D(origin=right_points['B1'], angle=angle_degrees, translation=translation)
-            self.ek_right.apply_transformation(transformer_right)
-            transformed_right_points = self.ek_right.get_transformed_points()
-        else:
-            transformed_left_points = left_points
-            transformed_right_points = right_points
-
         self.draw_grid(canvas, offset_x, offset_y)
 
-        for leg, points in [('left', transformed_left_points), ('right', transformed_right_points)]:
-            self.draw_links(canvas, points, leg, scale, offset_x, offset_y)
-            self.draw_points(canvas, points, leg, scale, offset_x, offset_y)
+        transformed_points = self.hip.get_transformed_points()
+        for leg in ['left', 'right']:
+            self.draw_links(canvas, transformed_points[leg], leg, scale, offset_x, offset_y)
+            self.draw_points(canvas, transformed_points[leg], leg, scale, offset_x, offset_y)
 
     def draw_grid(self, canvas, offset_x, offset_y):
         canvas_width = canvas.winfo_width()
@@ -227,36 +188,14 @@ class KinematicsApp(tk.Tk):
                 coord_text = f'({points[point][0]:.0f}, {points[point][1]:.0f})'
                 canvas.create_text(x+10, y+10, text=coord_text, anchor='sw')
 
-    @staticmethod
-    def lighten_color(color, amount=100):
-        # 色名を16進数に変換するディクショナリ
-        color_dict = {
-            'red': '#FF0000', 'blue': '#0000FF', 'green': '#00FF00',
-            'yellow': '#FFFF00', 'magenta': '#FF00FF', 'cyan': '#00FFFF'
-        }
-        
-        # 色名が与えられた場合、16進数に変換
-        if color in color_dict:
-            color = color_dict[color]
-        
-        # 16進数の場合の処理
-        if color.startswith('#'):
-            r, g, b = [int(color[i:i+2], 16) for i in (1, 3, 5)]
-            return f'#{min(255, r + amount):02x}{min(255, g + amount):02x}{min(255, b + amount):02x}'
-        
-        # 未知の色名の場合はそのまま返す
-        return color
+    def set_initial_slider_values(self):
+        for leg in ['left', 'right']:
+            for angle in ['theta1', 'theta2', 'thetaF']:
+                self.sliders[leg][angle].set(0)  # デフォルト値を0に設定
 
-    def transform_point(self, point, scale, offset_x, offset_y):
-        return point[0] * scale + offset_x, -point[1] * scale + offset_y
+    # その他のメソッド（draw_grid, draw_links, draw_points, etc.）は同じまま
 
-    @staticmethod
-    def angle_between_vectors(v1_start, v1_end, v2_start, v2_end):
-        v1 = np.array(v1_end) - np.array(v1_start)
-        v2 = np.array(v2_end) - np.array(v2_start)
-        angle_rad = np.arctan2(np.cross(v1, v2), np.dot(v1, v2))
-        angle_deg = np.degrees(angle_rad)
-        return angle_deg if -180 <= angle_deg <= 180 else angle_deg - 360 * np.sign(angle_deg)
+
 
 if __name__ == '__main__':
     app = KinematicsApp()

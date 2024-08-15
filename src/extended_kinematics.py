@@ -45,7 +45,7 @@ class ExtendedKinematics(ForwardKinematics):
         self.f = f
         self.F = None
         self.thetaF = 0
-        self.transformer = None
+        self.points = {}
         self.transformed_points = {}
 
     def set_angles(self, theta1, theta2, thetaF):
@@ -56,7 +56,7 @@ class ExtendedKinematics(ForwardKinematics):
         :param thetaF: X-E-F の角度 (度)
         """
         super().set_angles(theta1, theta2)
-        self.thetaF = thetaF
+        self.thetaF = np.radians(thetaF)
 
     def compute_forward_kinematics(self):
         """
@@ -64,6 +64,8 @@ class ExtendedKinematics(ForwardKinematics):
         """
         super().compute_forward_kinematics()
         self.F = self.calculate_F()
+        self.points = self.format_result()
+        self.transformed_points = self.points.copy()
 
     def calculate_F(self):
         """
@@ -72,7 +74,7 @@ class ExtendedKinematics(ForwardKinematics):
         if self.E is None or self.X is None:
             raise ValueError("EまたはX位置が計算されていません。")
 
-        return calculate_P3(self.E, self.X, self.f, self.thetaF)
+        return calculate_P3(self.E, self.X, self.f, np.degrees(self.thetaF))
 
     def calculate(self):
         """
@@ -86,7 +88,7 @@ class ExtendedKinematics(ForwardKinematics):
     def format_result(self):
         """
         計算結果をフォーマットして返す
-        :return: フされた結果
+        :return: フォーマットされた結果
         """
         return {
             "B1": self.B1,
@@ -105,11 +107,8 @@ class ExtendedKinematics(ForwardKinematics):
         座標変換を適用する
         :param transformer: 変換器オブジェクト
         """
-        self.transformer = transformer
-        self.transformed_points = {
-            key: self.transformer.transform(value)
-            for key, value in self.format_result().items()
-        }
+        for key, point in self.points.items():
+            self.transformed_points[key] = transformer.transform_point(point)
 
     def get_transformed_points(self):
         """
@@ -123,7 +122,7 @@ class ExtendedKinematics(ForwardKinematics):
         元の座標を取得する
         :return: 元の座標
         """
-        return self.format_result()
+        return self.points
 
 if __name__ == "__main__":
     # サンプルの値を設定

@@ -1,20 +1,22 @@
 import numpy as np
 
 class Transformation2D:
-    def __init__(self, origin, angle, translation=(0, 0)):
+    def __init__(self, origin=(0, 0), angle=0, translation=(0, 0)):
         self.origin = np.array(origin)
-        self.angle = angle
+        self.angle = np.radians(angle)
         self.translation = np.array(translation)
 
-    def transform(self, point):
-        point = np.array(point) - self.origin
-        rotated = self._rotate(point)
-        return rotated + self.origin + self.translation
+    def transform_point(self, point):
+        point = np.array(point)
+        # 原点を中心に回転
+        rotated = self.rotate(point - self.origin)
+        # 平行移動を適用
+        translated = rotated + self.translation + self.origin
+        return translated
 
-    def _rotate(self, point):
-        cos_theta = np.cos(np.radians(self.angle))
-        sin_theta = np.sin(np.radians(self.angle))
-        return np.array([
-            point[0] * cos_theta - point[1] * sin_theta,
-            point[0] * sin_theta + point[1] * cos_theta
-        ])
+    def rotate(self, point):
+        cos_theta = np.cos(self.angle)
+        sin_theta = np.sin(self.angle)
+        rotation_matrix = np.array([[cos_theta, -sin_theta],
+                                    [sin_theta, cos_theta]])
+        return np.dot(rotation_matrix, point)
