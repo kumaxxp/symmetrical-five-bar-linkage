@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from extended_kinematics import ExtendedKinematics
 from transformation import Transformation2D
 
@@ -31,10 +32,22 @@ class Hip:
         # 右脚の計算
         self.right_leg.compute_forward_kinematics()
 
+        # 左脚の回転（PointE中心）
+        points = self.left_leg.get_original_points()
+        self.left_leg.calculate_rotated_points(points['E'], points['F'], (0, 0), (1, 0))
+
+        # 左脚の回転後のポイント(B1,B2)
+        rotate_points = self.left_leg.get_rotated_points()
+        
+        # 右脚の回転（B1,B2中心）
+        points = self.right_leg.get_original_points()
+        self.right_leg.calculate_rotated_points(points['B2'], points['B1'], rotate_points['B1'], rotate_points['B2'])
+
     def compute_link_angles(self):
         # とりあえず、左の足を動かす
-        self.left_leg.calculate_rotated_points()
-        self.right_leg.calculate_rotated_points()
+        pass
+    #    self.left_leg.calculate_rotated_points()
+    #    self.right_leg.calculate_rotated_points()
 
     def get_transformed_points(self):
         return {
