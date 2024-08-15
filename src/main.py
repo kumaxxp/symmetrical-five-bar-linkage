@@ -9,7 +9,7 @@ class KinematicsApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title('Kinematics Visualization')
-        self.geometry('1400x1000')
+        self.geometry('1600x1000')
         self.resizable(False, True)
 
         # クラス属性として明示的に定義
@@ -65,8 +65,9 @@ class KinematicsApp(tk.Tk):
         main_frame.pack(fill=tk.BOTH, expand=True)
 
         # 左側のフレーム（スライダー用）
-        left_frame = ttk.Frame(main_frame)
+        left_frame = ttk.Frame(main_frame, width = 400)  # 幅を400に設定
         left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
+        left_frame.pack_propagate(False)  # サイズを固定
 
         # 右側のフレーム（キャンバス用）
         right_frame = ttk.Frame(main_frame)
@@ -74,22 +75,31 @@ class KinematicsApp(tk.Tk):
 
         # スライダーの設定
         self.sliders = {'left': {}, 'right': {}}
+        self.angle_labels = {'left': {}, 'right': {}}
         for leg in ['left', 'right']:
             leg_frame = ttk.LabelFrame(left_frame, text=f"{leg.capitalize()} Leg")
             leg_frame.pack(fill=tk.X, padx=5, pady=5)
             for angle in ['theta1', 'theta2', 'thetaF']:
-                slider = ttk.Scale(leg_frame, from_=-180, to=180, orient=tk.HORIZONTAL)
+                slider = ttk.Scale(leg_frame, from_=-180, to=180, orient=tk.HORIZONTAL, 
+                                   command=lambda x, l=leg, a=angle: self.on_slider_change(l, a))
                 slider.pack(fill=tk.X, padx=5, pady=5)
                 self.sliders[leg][angle] = slider
-                ttk.Label(leg_frame, text=angle).pack()
+
+                label_frame = ttk.Frame(leg_frame)
+                label_frame.pack(fill=tk.X, padx=5)
+                ttk.Label(label_frame, text=f"{angle}:").pack(side=tk.LEFT)
+                value_label = ttk.Label(label_frame, text="0.0")
+                value_label.pack(side=tk.RIGHT)
+                self.angle_labels[leg][angle] = value_label
 
         # キャンバスの設定
         self.canvas2 = tk.Canvas(right_frame, bg='white')
         self.canvas2.pack(fill=tk.BOTH, expand=True)
 
-        # 更新ボタン
-        update_button = ttk.Button(left_frame, text="Update", command=self.update_plot)
-        update_button.pack(pady=10)
+    def on_slider_change(self, leg, angle):
+        value = self.sliders[leg][angle].get()
+        self.angle_labels[leg][angle].config(text=f"{value:.1f}")
+        self.update_plot()
 
     def update_plot(self):
         for leg in ['left', 'right']:
