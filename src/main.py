@@ -144,20 +144,22 @@ class KinematicsApp(tk.Tk):
 
         # グリッドを描画
         grid_color = "#E0E0E0"  # 薄いグレー
-        grid_spacing = 25  # グリッドの間隔（ピクセル単位）
+        grid_spacing = int(25 * self.scale)  # グリッドの間隔（ピクセル単位）
 
         # 縦線を描画
-        for x in range(int(-offset_x), int(canvas_width - offset_x), grid_spacing):
-            canvas.create_line(x + offset_x, 0, x + offset_x, canvas_height, fill=grid_color)
+        for x in range(int(0), int(canvas_width/2), grid_spacing):
+            canvas.create_line(offset_x - x, 0, offset_x - x, canvas_height, fill=grid_color)
+            canvas.create_line(offset_x + x, 0, offset_x + x, canvas_height, fill=grid_color)
 
         # 横線を描画
-        for y in range(int(-offset_y), int(canvas_height - offset_y), grid_spacing):
-            canvas.create_line(0, y + offset_y, canvas_width, y + offset_y, fill=grid_color)
+        for y in range(int(0), int(canvas_height/2), grid_spacing):
+            canvas.create_line(0, offset_y - y, canvas_width, offset_y - y, fill=grid_color)
+            canvas.create_line(0, offset_y + y, canvas_width, offset_y + y, fill=grid_color)
 
         # X軸とY軸を描画（少し濃い色で）
         axis_color = "#A0A0A0"  # 濃いめのグレー
         canvas.create_line(0, offset_y, canvas_width, offset_y, fill=axis_color, width=2)  # X軸
-        canvas.create_line(offset_x, 0, offset_x, canvas_height, fill=axis_color)  # Y軸
+        canvas.create_line(offset_x, 0, offset_x, canvas_height, fill=axis_color, width=2)  # Y軸
 
         # 軸のラベルを追加
         label_color = "#606060"  # ダークグレー
@@ -170,12 +172,12 @@ class KinematicsApp(tk.Tk):
                 # X軸の目盛り
                 x = offset_x + i * grid_spacing * 4
                 canvas.create_line(x, offset_y - 5, x, offset_y + 5, fill=axis_color)
-                canvas.create_text(x, offset_y + 20, text=str(i * 100), fill=label_color)
+                canvas.create_text(x, offset_y + 20, text=str(int(i * 100 / self.scale)), fill=label_color)
 
                 # Y軸の目盛り
                 y = offset_y - i * grid_spacing * 4
                 canvas.create_line(offset_x - 5, y, offset_x + 5, y, fill=axis_color)
-                canvas.create_text(offset_x - 20, y, text=str(i * 100), fill=label_color)
+                canvas.create_text(offset_x - 20, y, text=str(int(i * 100 / self.scale)), fill=label_color)
 
     def draw_links(self, canvas, points, leg, scale, offset_x, offset_y):
         for start, end, color in [('B1', 'M1', 'red'), ('M1', 'X', 'blue'), ('X', 'M2', 'green'),
