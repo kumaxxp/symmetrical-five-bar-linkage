@@ -24,38 +24,12 @@ class Hip:
         else:
             raise ValueError("Invalid leg specified. Use 'left' or 'right'.")
 
-    def compute_leg_positions(self):
+    def compute_forward_kinematics(self):
         # 左脚の計算
         self.left_leg.compute_forward_kinematics()
-        left_points = self.left_leg.get_original_points()
 
         # 右脚の計算
         self.right_leg.compute_forward_kinematics()
-        right_points = self.right_leg.get_original_points()
-
-        # 左脚の変換
-        angle_flower_left = self._angle_between_vectors((0, 0), (1, 0), left_points['E'], left_points['F'])
-        transformer_left = Transformation2D(origin=left_points['E'], angle=-angle_flower_left, translation=-left_points['E'])
-        self.left_leg.apply_transformation(transformer_left)
-
-        # 右脚の変換
-        transformed_left_points = self.left_leg.get_transformed_points()
-        left_b1b2_vector = np.array(transformed_left_points['B2']) - np.array(transformed_left_points['B1'])
-        right_b1b2_vector = np.array(right_points['B2']) - np.array(right_points['B1'])
-        
-        angle = np.arctan2(left_b1b2_vector[1], left_b1b2_vector[0]) - np.arctan2(right_b1b2_vector[1], right_b1b2_vector[0])
-        angle_degrees = np.degrees(angle)
-        
-        translation = np.array(transformed_left_points['B1']) - np.array(right_points['B1'])
-        translation[0] += self.leg_distance  # 左右の脚の距離を考慮
-
-        transformer_right = Transformation2D(origin=right_points['B1'], angle=angle_degrees, translation=translation)
-        self.right_leg.apply_transformation(transformer_right)
-
-        # 腰の位置と角度に基づいて全体を変換
-        hip_transformer = Transformation2D(origin=(0, 0), angle=self.hip_angle, translation=self.hip_position)
-        self.left_leg.apply_transformation(hip_transformer)
-        self.right_leg.apply_transformation(hip_transformer)
 
     def compute_link_angles(self):
         # とりあえず、左の足を動かす

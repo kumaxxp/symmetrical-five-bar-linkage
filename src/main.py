@@ -62,7 +62,7 @@ class KinematicsApp(tk.Tk):
             }
             self.hip.set_leg_angles(leg, **initial_angles)
             self.last_angles[leg] = initial_angles.copy()
-            self.hip.compute_leg_positions()
+            self.hip.compute_forward_kinematics()
 
     def setup_ui(self):
         # メインフレームの作成
@@ -117,7 +117,7 @@ class KinematicsApp(tk.Tk):
                 self.hip.set_leg_angles(leg, **current_angles)
                 self.last_angles[leg] = current_angles.copy()
 
-        self.hip.compute_leg_positions()
+        self.hip.compute_forward_kinematics()
         self.draw_transformed_kinematics()
         self.canvas2.update()
 
