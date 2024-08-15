@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import numpy as np
+import math
 from extended_kinematics import ExtendedKinematics
 from transformation import Transformation2D
 from hip import Hip
@@ -16,6 +17,7 @@ class KinematicsApp(tk.Tk):
         self.scale = 1.0
         self.offset_x = 0
         self.offset_y = 0
+        self.ground_angle = math.radians(5)  # 地面の傾斜角度（5度）
 
         self.setup_ui()
         self.setup_kinematics()
@@ -122,6 +124,48 @@ class KinematicsApp(tk.Tk):
     def draw_transformed_kinematics(self):
         self.canvas2.delete("all")
         self.draw_kinematics(self.canvas2)
+        self.draw_ground(self.canvas2)
+        self.calculate_link_angles()ground(self, canvas):
+        canvas_width = canvas.winfo_width()
+        canvas_height = canvas.winfo_height()
+        offset_x = canvas_width / 2
+        offset_y = canvas_height / 2
+
+        # 地面の線を描画
+        x1, y1 = self.transform_point((-1000, 0), self.scale, offset_x, offset_y)
+        x2, y2 = self.transform_point((1000, 0), self.scale, offset_x, offset_y)
+        canvas.create_line(x1, y1, x2, y2, fill="brown", width=2)
+
+        # 地面の角度を表示
+        angle_text = f"Ground angle: {math.degrees(self.ground_angle):.1f}°"
+        canvas.create_text(50, 20, text=angle_text, anchor='nw')
+
+    def calculate_link_angles(self):
+        transformed_points = self.hip.get_transformed_points()
+        for leg in ['left', 'right']:
+            for i in range(5):  # 5つのリンク（B1-M1, M1-X, X-M2, M2-B2, X-F）
+                start_point = None
+                end_point = None
+                if i == 0:
+                    start_point = transformed_points[leg]['B1']
+                    end_point = transformed_points[leg]['M1']
+                elif i == 1:
+                    start_point = transformed_points[leg]['M1']
+                    end_point = transformed_points[leg]['X']
+                elif i == 2:
+                    start_point = transformed_points[leg]['X']
+                    end_point = transformed_points[leg]['M2']
+                elif i == 3:
+                    start_point = transformed_points[leg]['M2']
+                    end_point = transformed_points[leg]['B2']
+                elif i == 4:
+                    start_point = transformed_points[leg]['X']
+                    end_point =leg]['F']
+
+                if start_point is not None and end_point is not None:
+                    link_angle = math.atan2(end_point[1] - start_point[1], end_point[0] - start_point[0])
+                    relative_angle = link_angle - self.ground_angle
+                    print(f"{leg.capitalize()} Leg, Link {i+1} angle relative to ground: {math.degrees(relative_angle):.2f} degrees")
 
     def draw_kinematics(self, canvas):
         canvas_width = canvas.winfo_width()
