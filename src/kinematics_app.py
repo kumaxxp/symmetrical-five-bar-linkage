@@ -15,8 +15,8 @@ class KinematicsApp(tk.Tk):
         self.visualization = Visualization(self.gui.canvas)
 
         self.setup_kinematics()
-        self.set_initial_angles()
-        self.initialize_kinematics()
+        self.set_initial_angles()  # GUIのスライダに初期値を設定
+        self.initialize_kinematics()  # 初期値を使用して運動学を初期化
         
         self.after(100, self.update_plot)
 
@@ -29,9 +29,6 @@ class KinematicsApp(tk.Tk):
             'left': {'theta1': -50, 'theta2': -120, 'thetaF': -60},
             'right': {'theta1': -50, 'theta2': -120, 'thetaF': -60}
         }
-
-        for leg in ['left', 'right']:
-            self.hip.set_leg_angles(leg, **self.initial_angles[leg])
 
     def set_initial_angles(self):
         for leg in ['left', 'right']:

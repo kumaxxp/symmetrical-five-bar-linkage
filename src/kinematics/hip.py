@@ -31,3 +31,11 @@ class Hip:
     def compute_link_angles(self):
         self.left_leg.compute_link_angles()
         self.right_leg.compute_link_angles()
+
+if __name__ == "__main__":
+    # extended_kinematicsと同様にデフォルトのリンクの数値のメカ構造を生成
+    # Y=0の地面に対して、左脚の足先E-Fが平行になるように回転させてリンクを変化させる
+
+    hip = Hip()
+    
+
