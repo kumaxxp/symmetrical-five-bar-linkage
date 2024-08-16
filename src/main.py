@@ -34,8 +34,8 @@ class KinematicsApp(tk.Tk):
         B1 = (100, -100 + 200)
         B2 = (-100, -100 + 200)
 
-        left_leg = ExtendedKinematics(350, 400, 200, 200, B1, B2)
-        right_leg = ExtendedKinematics(350, 400, 200, 200, B1, B2)
+        left_leg = ExtendedKinematics(350, 400, 300, 300, B1, B2)
+        right_leg = ExtendedKinematics(350, 400, 300, 300, B1, B2)
         self.hip = Hip(left_leg, right_leg)
 
         # 初期角度を設定（例として値を設定していますが、必要に応じて調整してください）
@@ -169,7 +169,7 @@ class KinematicsApp(tk.Tk):
 
         # グリッドを描画
         grid_color = "#E0E0E0"  # 薄いグレー
-        grid_spacing = int(25 * self.scale)  # グリッドの間隔（ピクセル単位）
+        grid_spacing = int(24 * self.scale)  # グリッドの間隔（ピクセル単位）
 
         # 縦線を描画
         for x in range(int(0), int(canvas_width/2), grid_spacing):
@@ -192,17 +192,17 @@ class KinematicsApp(tk.Tk):
         canvas.create_text(offset_x + 20, 20, text="Y", fill=label_color)
 
         # 目盛りを追加
-        for i in range(-5, 6):
+        for i in range(-10, 11):
             if i != 0:
                 # X軸の目盛り
                 x = offset_x + i * grid_spacing * 4
                 canvas.create_line(x, offset_y - 5, x, offset_y + 5, fill=axis_color)
-                canvas.create_text(x, offset_y + 20, text=str(int(i * 100 / self.scale)), fill=label_color)
+                canvas.create_text(x, offset_y + 20, text=str(int(i * 100)), fill=label_color)
 
                 # Y軸の目盛り
                 y = offset_y - i * grid_spacing * 4
                 canvas.create_line(offset_x - 5, y, offset_x + 5, y, fill=axis_color)
-                canvas.create_text(offset_x - 20, y, text=str(int(i * 100 / self.scale)), fill=label_color)
+                canvas.create_text(offset_x - 20, y, text=str(int(i * 100)), fill=label_color)
 
     def draw_links(self, canvas, points, leg, scale, offset_x, offset_y):
         for start, end, color in [('B1', 'M1', 'red'), ('M1', 'X', 'blue'), ('X', 'M2', 'green'),
