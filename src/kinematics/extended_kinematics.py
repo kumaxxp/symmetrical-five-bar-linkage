@@ -1,8 +1,8 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-from linkage_kinematics import ForwardKinematics
-from transformation import Transformation2D
+from kinematics.linkage_kinematics import ForwardKinematics
+from kinematics.transformation import Transformation2D
 
 def calculate_P3(P1, P2, L, theta):
     """
