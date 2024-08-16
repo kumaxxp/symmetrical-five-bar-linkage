@@ -13,6 +13,8 @@ def calculate_P3(P1, P2, L, theta):
     :param theta: P1からP2へのベクトルとP1からP3へのベクトルとの間の角度 (度)
     :return: P3の座標 (x3, y3)
     """
+    theta = float(theta)  # thetaを確実に浮動小数点数に変換
+        
     # ステップ1: ベクトルの定義
     x1, y1 = P1
     x2, y2 = P2
