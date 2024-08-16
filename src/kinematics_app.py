@@ -73,5 +73,5 @@ class KinematicsApp(tk.Tk):
 
         self.visualization.draw_transformed_kinematics(self.hip)
         self.gui.canvas.update()
-        self.after(100, self.update_plot)
+        #self.after(50, self.update_plot)
 
