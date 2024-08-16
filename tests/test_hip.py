@@ -15,14 +15,14 @@ class TestHip(unittest.TestCase):
 
     def test_set_leg_angles(self):
         self.hip.set_leg_angles('left', theta1=-45, theta2=-90, thetaF=-30)
-        self.assertAlmostEqual(self.hip.left_leg.theta1, math.radians(-45))
-        self.assertAlmostEqual(self.hip.left_leg.theta2, math.radians(-90))
-        self.assertAlmostEqual(self.hip.left_leg.thetaF, math.radians(-30))
+        self.assertEqual(self.hip.left_leg.theta1, -45)
+        self.assertEqual(self.hip.left_leg.theta2, -90)
+        self.assertEqual(self.hip.left_leg.thetaF, -30)
 
         self.hip.set_leg_angles('right', theta1=-45, theta2=-90, thetaF=-30)
-        self.assertAlmostEqual(self.hip.right_leg.theta1, math.radians(-45))
-        self.assertAlmostEqual(self.hip.right_leg.theta2, math.radians(-90))
-        self.assertAlmostEqual(self.hip.right_leg.thetaF, math.radians(-30))
+        self.assertEqual(self.hip.right_leg.theta1, -45)
+        self.assertEqual(self.hip.right_leg.theta2, -90)
+        self.assertEqual(self.hip.right_leg.thetaF, -30)
 
     def test_compute_forward_kinematics(self):
         self.hip.set_leg_angles('left', theta1=-45, theta2=-90, thetaF=-30)

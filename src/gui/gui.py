@@ -17,6 +17,7 @@ class GUI:
 
         self.left_frame = ttk.Frame(self.main_frame, width=400)
         self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
+        self.left_frame.pack_propagate(False)  # サイズを固定
 
         self.right_frame = ttk.Frame(self.main_frame)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)

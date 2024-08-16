@@ -67,16 +67,17 @@ class Visualization:
 
     def draw_links(self, points, leg):
         for start, end, color in [('B1', 'M1', 'red'), ('M1', 'X', 'blue'), ('X', 'M2', 'green'),
-                                  ('M2', 'B2', 'yellow'), ('X', 'E', 'magenta'), ('E', 'F', 'cyan')]:
-            if points[start] is not None and points[end]:
-                x1, y1 = self.transform_point(points[start])
-                x2, y2 = self.transform_point(points[end])
-                if leg == 'right':
-                    color = self.lighten_color(color, amount=150)
-                    link_width = 2
-                else:
-                    link_width = 4
-                self.canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width)
+                                ('M2', 'B2', 'yellow'), ('X', 'E', 'magenta'), ('E', 'F', 'cyan')]:
+            if points[start] is not None and points[end] is not None:
+                if not np.isnan(points[start]).any() and not np.isnan(points[end]).any():
+                    x1, y1 = self.transform_point(points[start])
+                    x2, y2 = self.transform_point(points[end])
+                    if leg == 'right':
+                        color = self.lighten_color(color, amount=150)
+                        link_width = 2
+                    else:
+                        link_width = 4
+                    self.canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width)
 
     def draw_points(self, points, leg):
         for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
