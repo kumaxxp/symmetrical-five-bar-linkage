@@ -61,21 +61,8 @@ class KinematicsApp(tk.Tk):
         # スライダコントロールの値に沿って、リンクの基本形状を計算する
         self.hip.compute_forward_kinematics()
 
-        ##----------左脚を基準に回転
-        # 左脚の回転（PointE中心）
-        points = self.hip.left_leg.get_original_points()
-        self.hip.left_leg.calculate_rotated_points(points['E'], points['F'], (0, 0), (1, 0))
-
-        # 左脚の回転後のポイント(B1,B2)
-        rotate_points = self.hip.left_leg.get_rotated_points()
-        
-        # 右脚の回転（B1,B2中心）。B1,B2に向かって平行移動
-        points = self.hip.right_leg.get_original_points()
-        self.hip.right_leg.calculate_rotated_points( points['B2'], points['B1'], rotate_points['B2'], rotate_points['B1'])
-        self.hip.right_leg.calculate_translate_points( rotate_points['B2'])
-        ##----------左脚を基準に回転ここまで
+        # 左脚を基準に回転
+        self.hip.align_legs_to_ground()
 
         self.visualization.draw_transformed_kinematics(self.hip)
         self.gui.canvas.update()
-        #self.after(50, self.update_plot)
-

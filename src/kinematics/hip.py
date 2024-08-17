@@ -45,20 +45,15 @@ class Hip:
         right_points = self.right_leg.get_original_points()
 
         # 左脚を地面に合わせて回転
-        self.rotate_leg(self.left_leg, left_points['E'], (left_points['F'][0], self.ground_y))
+        self.left_leg.calculate_rotated_points(left_points['E'], left_points['F'], (0, 0), (1, 0))
 
         # 回転後の左脚のB1, B2の位置を取得
         rotated_left_points = self.left_leg.get_rotated_points()
 
         # 右脚をB1, B2に合わせて回転と平行移動
-        self.rotate_leg(self.right_leg, right_points['B2'], rotated_left_points['B2'])
-        self.translate_leg(self.right_leg, np.array(rotated_left_points['B2']) - np.array(right_points['B2']))
-
-    def rotate_leg(self, leg, pivot, target):
-        leg.calculate_rotated_points(pivot, target)
-
-    def translate_leg(self, leg, translation):
-        leg.calculate_translate_points(translation)
+        self.right_leg.calculate_rotated_points(left_points['B2'], left_points['B1'], rotated_left_points['B2'], rotated_left_points['B1'])
+        
+        self.right_leg.calculate_translate_points(rotated_left_points['B2'])
 
     @staticmethod
     def _angle_between_vectors(v1_start, v1_end, v2_start, v2_end):

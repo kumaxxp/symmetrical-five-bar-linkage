@@ -58,8 +58,6 @@ class Hip {
   + get_rotated_points(): dict
   + compute_link_angles()
   + align_legs_to_ground()
-  - rotate_leg(leg: ExtendedKinematics, pivot: tuple, target: tuple)
-  - translate_leg(leg: ExtendedKinematics, translation: tuple)
   - {static} _angle_between_vectors(v1_start: tuple, v1_end: tuple, v2_start: tuple, v2_end: tuple): float
 }
 
