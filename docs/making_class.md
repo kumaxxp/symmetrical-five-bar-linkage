@@ -1,11 +1,14 @@
-```plantuml
+# クラス構造
 
+以下は、2D運動学シミュレータのクラス構造を示すクラス図です。
+
+```plantuml
 @startuml
 class ForwardKinematics {
-  +__init__(Yb, l, b, m, e)
-  +set_angles(theta1, theta2)
+  +__init__(Yb: float, l: float, b: float, m: float, e: float)
+  +set_angles(theta1: float, theta2: float)
   +compute_forward_kinematics()
-  +calculate()
+  +calculate(): dict
 }
 
 class ExtendedKinematics {
@@ -19,87 +22,93 @@ class ExtendedKinematics {
   -point_colors: dict
   -B1: tuple
   -B2: tuple
-  +__init__(Yb, l, b, m, e, f, B1, B2)
-  +set_angles(theta1, theta2, thetaF)
+  +__init__(Yb: float, l: float, b: float, m: float, e: float, f: float, B1: tuple, B2: tuple)
+  +set_angles(theta1: float, theta2: float, thetaF: float)
   +compute_forward_kinematics()
   -calculate_F()
-  +calculate()
-  -format_result()
-  +apply_transformation(transformer)
-  +get_transformed_points()
-  +get_original_points()
-  +get_link_points()
-  +get_link_colors()
-  +get_point_colors()
-  +get_lightened_colors(amount)
-  +get_link_angle(link_index)
+  +calculate(): dict
+  -format_result(): dict
+  +apply_transformation(transformer: Transformation2D)
+  +get_transformed_points(): dict
+  +get_original_points(): dict
+  +get_link_points(): list
+  +get_link_colors(): dict
+  +get_point_colors(): dict
+  +get_lightened_colors(amount: float): dict
+  +get_link_angle(link_index: int): float
 }
 
 class Transformation2D {
   -origin: tuple
   -angle: float
   -translation: tuple
-  +__init__(origin, angle, translation)
-  +transform(point)
-}
-
-class Ground {
-  -slope_angle: float
-  +__init__(slope_angle)
-  +get_slope_angle()
-  +set_slope_angle(angle)
-}
-
-class LegGroundInterface {
-  -leg: ExtendedKinematics
-  -ground: Ground
-  -contact_link_index: int
-  +__init__(leg, ground, contact_link_index)
-  +align_leg_to_ground()
-  +get_alignment_transformation()
+  +__init__(origin: tuple, angle: float, translation: tuple)
+  : tuple): tuple
 }
 
 class Hip {
   -left_leg: ExtendedKinematics
   -right_leg: ExtendedKinematics
-  -hip_position: tuple
-  - float
-  -B1: tuple
-  -B2: tuple
-  -ground: Ground
-  -active_leg_interface: LegGroundInterface
-  +__init__(left_leg, right_leg, B1, B2, ground)
-  +set_hip_position(x, y)
-  +set_hip_angle(angle)
-  +compute_leg_positions()
-  +get_transformed_points()
-  +set_active_leg(leg_side, contact_link_index)
-  +align_active_leg_to_ground()
+  
+  +__init__()
+  +set_leg_param(b: float, m: float, e: float, f: float, B1: tuple, B2: tuple)
+  +set_leg_angles(leg: str, theta1: float, theta2: float, thetaF: float)
+  +compute_forward_kinematics()
+  +get_rotated_points(): dict
+  +compute_link_angles()
 }
+
+note right of Hip::set_leg_param
+  両足のパラメータを設定する
+  b: B1-M1 および B2-M2 のリンク長
+  m: M1-X および M2-X のリンク長
+  e: X-E の距離
+  f: 追加リンクの長さ
+  B1: B1の座標 (x, y)
+  B2: B2の座標 (x, y)
+end note
 
 class KinematicsApp {
-  -hip: Hip
-  -canvas: Canvas
-  -sliders: dict
-  -ground: Ground
-  +__init__()
-  +setup_ui()
-  +update_plot()
-  +draw_kinematics()
-  +update_ground_slope()
-  +switch_active_leg()
+  - hip: Hip
+  - visualization: Visualization
+  - gui: GUI
+  - motion_controller: MotionController
+  + run()
+  - update()
+  - toggle_auto_motion(is_auto: bool)
 }
 
-ForwardKinematics <|-- ExtendedKinematics
+
+class Visualization {
+  +{static} draw_linkage(canvas: tk.Canvas, points: dict, colors: dict)
+  +{static} draw_point(canvas: tk.Canvas, x: float, y: float, color: str, size: int)
+  +{static} draw_line(canvas: tk.Canvas, start: tuple, end: tuple, color: str, width: int)
+}
+
+class GUI {
+  - sliders: List[Slider]
+  - auto_motion_button: Button
+  + update_sliders(angles: List[float])
+  + get_slider_values(): List[float]
+  + set_auto_motion_callback(callback: Callable)
+}
+
+class MotionController {
+  -_auto_mode: bool
+  - current_time: float
+  + update(dt: float): List[float]
+  + set_auto_mode(is_auto: bool)
+}
+
+ForwardKinematics <|-r- ExtendedKinematics
 ExtendedKinematics --> Transformation2D
-Hip "1" *-- "2" ExtendedKinematics
-Hip "1" *-- "1" Ground
-Hip "1" *-- "0..1" LegGroundInterface
-LegGroundInterface "1" *-- "1" ExtendedKinematics
-LegGroundInterface "1" *-- "1" Ground
+Hip "1" *-d- "2" ExtendedKinematics
 KinematicsApp "1" *-- "1" Hip
-KinematicsApp "1" *-- "1" Ground
+KinematicsApp .l.> Visualization
+KinematicsApp *-u- GUI
+KinematicsApp *-r- MotionController
+
 @enduml
 
-
 ```
+

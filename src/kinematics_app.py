@@ -21,9 +21,13 @@ class KinematicsApp(tk.Tk):
         self.after(50, self.update_plot)
 
     def setup_kinematics(self):
+        """
+        ロボットのパラメータを設定する
+        """
+
         B1 = (50, -100 + 200)
         B2 = (-50, -100 + 200)
-        self.hip.setup(B1, B2)
+        self.hip.set_leg_param(150, 200, 150, 150, B1, B2)
 
         self.initial_angles = {
             'left': {'theta1': -50, 'theta2': -120, 'thetaF': -60},

@@ -8,9 +8,19 @@ class Hip:
         self.left_leg = None
         self.right_leg = None
 
-    def setup(self, B1, B2):
-        self.left_leg = ExtendedKinematics(150, 200, 150, 150, B1, B2)
-        self.right_leg = ExtendedKinematics(150, 200, 150, 150, B1, B2)
+    def set_leg_param(self, b, m, e, f, B1, B2, ):
+        """
+        両足のパラメータを設定する
+        :param b: B1-M1 および B2-M2 のリンク長
+        :param m: M1-X および M2-X のリンク長
+        :param e: X-E の距離
+        :param f: 追加リンクの長さ
+        :param B1: B1の座標 (x, y)
+        :param B2: B2の座標 (x, y)
+        """
+
+        self.left_leg = ExtendedKinematics(b, m, e, f, B1, B2)
+        self.right_leg = ExtendedKinematics(b, m, e, f, B1, B2)
 
     def set_leg_angles(self, leg, theta1, theta2, thetaF):
         if leg not in ['left', 'right']:
