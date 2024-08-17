@@ -47,16 +47,22 @@ class Transformation2D {
 }
 
 class Hip {
-  -left_leg: ExtendedKinematics
-  -right_leg: ExtendedKinematics
+  - left_leg: ExtendedKinematics
+  - right_leg: ExtendedKinematics
+  - ground_y: float
   
-  +__init__()
-  +set_leg_param(b: float, m: float, e: float, f: float, B1: tuple, B2: tuple)
-  +set_leg_angles(leg: str, theta1: float, theta2: float, thetaF: float)
-  +compute_forward_kinematics()
-  +get_rotated_points(): dict
-  +compute_link_angles()
+  + __init__(ground_y: float)
+  + set_leg_param(b: float, m: float, e: float, f: float, B1: tuple, B2: tuple)
+  + set_leg_angles(leg: str, theta1: float, theta2: float, thetaF: float)
+  + compute_forward_kinematics()
+  + get_rotated_points(): dict
+  + compute_link_angles()
+  + align_legs_to_ground()
+  - rotate_leg(leg: ExtendedKinematics, pivot: tuple, target: tuple)
+  - translate_leg(leg: ExtendedKinematics, translation: tuple)
+  - {static} _angle_between_vectors(v1_start: tuple, v1_end: tuple, v2_start: tuple, v2_end: tuple): float
 }
+
 
 note right of Hip::set_leg_param
   両足のパラメータを設定する
@@ -73,38 +79,48 @@ class KinematicsApp {
   - visualization: Visualization
   - gui: GUI
   - motion_controller: MotionController
+  - auto_mode: bool
   + run()
   - update()
-  - toggle_auto_motion(is_auto: bool)
+  - toggle_auto_motion()
 }
-
 
 class Visualization {
-  +{static} draw_linkage(canvas: tk.Canvas, points: dict, colors: dict)
-  +{static} draw_point(canvas: tk.Canvas, x: float, y: float, color: str, size: int)
-  +{static} draw_line(canvas: tk.Canvas, start: tuple, end: tuple, color: str, width: int)
+  - canvas: tk.Canvas
+  - scale_factor: float
+  - offset_x: float
+  - offset_y: float
+  
+  + __init__(canvas: tk.Canvas, scale_factor: float, offset_x: float, offset_y: float)
+  + draw_linkage(points: dict, colors: dict)
+  + draw_point(x: float, y: float, color: str, size: int)
+  + draw_line(start: tuple, end: tuple, color: str, width: int)
+  + clear_canvas()
+  + update_scale(scale_factor: float)
+  + update_offset(offset_x: float, offset_y: float)
+  - transform_coordinates(x: float, y: float): tuple
 }
+
+
 
 class GUI {
   - sliders: List[Slider]
   - auto_motion_button: Button
+  + __init__(update_callback: Callable, toggle_auto_motion: Callable)
   + update_sliders(angles: List[float])
   + get_slider_values(): List[float]
-  + set_auto_motion_callback(callback: Callable)
 }
 
 class MotionController {
-  -_auto_mode: bool
   - current_time: float
   + update(dt: float): List[float]
-  + set_auto_mode(is_auto: bool)
 }
 
 ForwardKinematics <|-r- ExtendedKinematics
 ExtendedKinematics --> Transformation2D
 Hip "1" *-d- "2" ExtendedKinematics
 KinematicsApp "1" *-- "1" Hip
-KinematicsApp .l.> Visualization
+KinematicsApp "1" *-l- "1" Visualization
 KinematicsApp *-u- GUI
 KinematicsApp *-r- MotionController
 
