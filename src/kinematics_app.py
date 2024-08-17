@@ -65,5 +65,8 @@ class KinematicsApp(tk.Tk):
         # 左脚を基準に回転
         self.hip.align_legs_to_ground()
 
+        # 重心を計算する
+        self.hip.calculate_total_center_of_mass()
+
         self.visualization.draw_transformed_kinematics(self.hip)
         self.gui.canvas.update()

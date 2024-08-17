@@ -90,6 +90,22 @@ class Visualization:
             self.update_links(rotated_points[leg], leg)
             self.update_points(rotated_points[leg], leg)
 
+        # 重心の計算と描画
+        self.draw_center_of_mass(hip)
+
+    def draw_center_of_mass(self, hip):
+        if hip.left_com is not None:
+            self.draw_point(hip.left_com, 'blue', 8, "Left CoM")
+        if hip.right_com is not None:
+            self.draw_point(hip.right_com, 'red', 8, "Right CoM")
+        if hip.center_com is not None:
+            self.draw_point(hip.center_com, 'green', 10, "Total CoM")
+
+    def draw_point(self, point, color, size, label):
+        x, y = self.transform_point(point)
+        self.canvas.create_oval(x-size, y-size, x+size, y+size, fill='', outline=color, width = 2)
+        # self.canvas.create_text(x, y-15, text=label, fill=color)
+
     def update_links(self, points, leg):
         for start, end, color in [('B1', 'M1', 'red'), ('M1', 'X', 'blue'), ('X', 'M2', 'green'),
                                   ('M2', 'B2', 'yellow'), ('X', 'E', 'magenta'), ('E', 'F', 'cyan')]:

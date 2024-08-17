@@ -8,6 +8,10 @@ class Hip:
         self.ground_y = ground_y
         self.weights = {}  # 各点の重量を保存する辞書
 
+        self.center_com = None
+        self.left_com = None
+        self.right_com = None
+
     def set_leg_param(self, b, m, e, f, B1, B2):
         """
         両足のパラメータを設定する
@@ -55,6 +59,7 @@ class Hip:
         """
         points = getattr(self, f"{leg}_leg").get_rotated_points()
         weight = 0
+        total_weight = 0
         weighted_sum = np.array([0.0, 0.0])
 
         for point_name, coordinates in points.items():
@@ -71,16 +76,16 @@ class Hip:
         """
         全体の重心を計算する
         """
-        left_com = self.calculate_leg_center_of_mass('left')
-        right_com = self.calculate_leg_center_of_mass('right')
+        self.left_com = self.calculate_leg_center_of_mass('left')
+        self.right_com = self.calculate_leg_center_of_mass('right')
 
-        if left_com is None or right_com is None:
+        if self.left_com is None or self.right_com is None:
             return None
 
         total_weight = sum(self.weights.values())
-        weighted_sum = left_com * sum(self.weights.values()) / 2 + right_com * sum(self.weights.values()) / 2
+        weighted_sum = self.left_com * sum(self.weights.values()) / 2 + self.right_com * sum(self.weights.values()) / 2
 
-        return weighted_sum / total_weight
+        self.center_com = weighted_sum / total_weight
 
     def align_legs_to_ground(self):
         left_points = self.left_leg.get_original_points()
