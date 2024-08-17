@@ -1,14 +1,13 @@
 import numpy as np
-import math
 from kinematics.extended_kinematics import ExtendedKinematics
-from kinematics.transformation import Transformation2D
 
 class Hip:
-    def __init__(self):
+    def __init__(self, ground_y=0):
         self.left_leg = None
         self.right_leg = None
+        self.ground_y = ground_y
 
-    def set_leg_param(self, b, m, e, f, B1, B2, ):
+    def set_leg_param(self, b, m, e, f, B1, B2):
         """
         両足のパラメータを設定する
         :param b: B1-M1 および B2-M2 のリンク長
@@ -25,11 +24,7 @@ class Hip:
     def set_leg_angles(self, leg, theta1, theta2, thetaF):
         if leg not in ['left', 'right']:
             raise ValueError("Invalid leg name. Must be 'left' or 'right'.")
-
-        if leg == 'left':
-            self.left_leg.set_angles(theta1, theta2, thetaF)
-        elif leg == 'right':
-            self.right_leg.set_angles(theta1, theta2, thetaF)
+        getattr(self, f"{leg}_leg").set_angles(theta1, theta2, thetaF)
 
     def compute_forward_kinematics(self):
         self.left_leg.compute_forward_kinematics()
@@ -45,6 +40,34 @@ class Hip:
         self.left_leg.compute_link_angles()
         self.right_leg.compute_link_angles()
 
+    def align_legs_to_ground(self):
+        left_points = self.left_leg.get_original_points()
+        right_points = self.right_leg.get_original_points()
+
+        # 左脚を地面に合わせて回転
+        self.rotate_leg(self.left_leg, left_points['E'], (left_points['F'][0], self.ground_y))
+
+        # 回転後の左脚のB1, B2の位置を取得
+        rotated_left_points = self.left_leg.get_rotated_points()
+
+        # 右脚をB1, B2に合わせて回転と平行移動
+        self.rotate_leg(self.right_leg, right_points['B2'], rotated_left_points['B2'])
+        self.translate_leg(self.right_leg, np.array(rotated_left_points['B2']) - np.array(right_points['B2']))
+
+    def rotate_leg(self, leg, pivot, target):
+        leg.calculate_rotated_points(pivot, target)
+
+    def translate_leg(self, leg, translation):
+        leg.calculate_translate_points(translation)
+
+    @staticmethod
+    def _angle_between_vectors(v1_start, v1_end, v2_start, v2_end):
+        v1 = np.array(v1_end) - np.array(v1_start)
+        v2 = np.array(v2_end) - np.array(v2_start)
+        angle_rad = np.arctan2(np.cross(v1, v2), np.dot(v1, v2))
+        angle_deg = np.degrees(angle_rad)
+        return angle_deg if -180 <= angle_deg <= 180 else angle_deg - 360 * np.sign(angle_deg)
+    
 if __name__ == "__main__":
     # extended_kinematicsと同様にデフォルトのリンクの数値のメカ構造を生成
     # Y=0の地面に対して、左脚の足先E-Fが平行になるように回転させてリンクを変化させる
@@ -64,25 +87,3 @@ if __name__ == "__main__":
     hip.set_leg_angles('right', *initial_angles['right'])
 
     hip.compute_forward_kinematics()
-
-    """
-    # 左脚の回転（PointE中心）
-    points = self.left_leg.get_original_points()
-    self.left_leg.calculate_rotated_points(points['E'], points['F'], (0, 0), (1, 0))
-
-    # 左脚の回転後のポイント(B1,B2)
-    rotate_points = self.left_leg.get_rotated_points()
-    
-    # 右脚の回転（B1,B2中心）。B1,B2に向かって平行移動
-    points = self.right_leg.get_original_points()
-    self.right_leg.calculate_rotated_points( points['B2'], points['B1'], rotate_points['B2'], rotate_points['B1'])
-    self.right_leg.calculate_translate_points( rotate_points['B2'])
-    
-    @staticmethod
-    def _angle_between_vectors(v1_start, v1_end, v2_start, v2_end):
-        v1 = np.array(v1_end) - np.array(v1_start)
-        v2 = np.array(v2_end) - np.array(v2_start)
-        angle_rad = np.arctan2(np.cross(v1, v2), np.dot(v1, v2))
-        angle_deg = np.degrees(angle_rad)
-        return angle_deg if -180 <= angle_deg <= 180 else angle_deg - 360 * np.sign(angle_deg)
-    """
