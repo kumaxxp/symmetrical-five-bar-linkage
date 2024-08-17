@@ -117,19 +117,9 @@ class Visualization:
                 if leg == 'right':
                     color = self.lighten_color(color, amount=150)
                 
-                key = f"{point}-point"
-                if key in self.kinematics_items[leg]:
-                    self.canvas.coords(self.kinematics_items[leg][key], x-3, y-3, x+3, y+3)
-                else:
-                    self.kinematics_items[leg][key] = self.canvas.create_oval(x-3, y-3, x+3, y+3, fill=color)
-
-                coord_key = f"{point}-coord"
+                self.canvas.create_oval(x-3, y-3, x+3, y+3, fill=color)
                 coord_text = f'({points[point][0]:.0f}, {points[point][1]:.0f})'
-                if coord_key in self.kinematics_items[leg]:
-                    self.canvas.itemconfig(self.kinematics_items[leg][coord_key], text=coord_text)
-                    self.canvas.coords(self.kinematics_items[leg][coord_key], x+10, y+10)
-                else:
-                    self.kinematics_items[leg][coord_key] = self.canvas.create_text(x+10, y+10, text=coord_text, anchor='sw')
+                self.canvas.create_text(x+10, y+10, text=coord_text, anchor='sw')
 
     def transform_point(self, point):
         return (point[0] * self.scale + self.offset_x, -point[1] * self.scale + self.offset_y)

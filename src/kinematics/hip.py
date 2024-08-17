@@ -9,8 +9,8 @@ class Hip:
         self.right_leg = None
 
     def setup(self, B1, B2):
-        self.left_leg = ExtendedKinematics(350, 400, 300, 300, B1, B2)
-        self.right_leg = ExtendedKinematics(350, 400, 300, 300, B1, B2)
+        self.left_leg = ExtendedKinematics(150, 200, 150, 150, B1, B2)
+        self.right_leg = ExtendedKinematics(150, 200, 150, 150, B1, B2)
 
     def set_leg_angles(self, leg, theta1, theta2, thetaF):
         if leg not in ['left', 'right']:
@@ -41,8 +41,8 @@ if __name__ == "__main__":
 
     hip = Hip()
 
-    B1 = (100, -100 + 200)
-    B2 = (-100, -100 + 200)
+    B1 = (50, -100 + 200)
+    B2 = (-50, -100 + 200)
     hip.setup(B1, B2)
 
     initial_angles = {

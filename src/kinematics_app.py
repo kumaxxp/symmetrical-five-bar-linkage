@@ -21,8 +21,8 @@ class KinematicsApp(tk.Tk):
         self.after(50, self.update_plot)
 
     def setup_kinematics(self):
-        B1 = (100, -100 + 200)
-        B2 = (-100, -100 + 200)
+        B1 = (50, -100 + 200)
+        B2 = (-50, -100 + 200)
         self.hip.setup(B1, B2)
 
         self.initial_angles = {
