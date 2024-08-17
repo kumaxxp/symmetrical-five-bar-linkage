@@ -28,6 +28,7 @@ class KinematicsApp(tk.Tk):
         B1 = (50, -100 + 200)
         B2 = (-50, -100 + 200)
         self.hip.set_leg_param(150, 200, 150, 150, B1, B2)
+        self.hip.set_weights({'B1': 1, 'B2': 1, 'E': 1})
 
         self.initial_angles = {
             'left': {'theta1': -50, 'theta2': -120, 'thetaF': -60},

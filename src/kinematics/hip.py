@@ -6,6 +6,7 @@ class Hip:
         self.left_leg = None
         self.right_leg = None
         self.ground_y = ground_y
+        self.weights = {}  # 各点の重量を保存する辞書
 
     def set_leg_param(self, b, m, e, f, B1, B2):
         """
@@ -40,6 +41,47 @@ class Hip:
         self.left_leg.compute_link_angles()
         self.right_leg.compute_link_angles()
 
+    def set_weights(self, weights):
+        """
+        各点の重量を設定する
+        :param weights: 点の名前と重量のペアを含む辞書
+        例: {'B1': 1, 'B2': 1, 'E': 1}
+        """
+        self.weights = weights
+
+    def calculate_leg_center_of_mass(self, leg):
+        """
+        指定された脚の重心を計算する
+        """
+        points = getattr(self, f"{leg}_leg").get_rotated_points()
+        weight = 0
+        weighted_sum = np.array([0.0, 0.0])
+
+        for point_name, coordinates in points.items():
+            if point_name in self.weights:
+                weight = self.weights[point_name]
+                total_weight += weight
+                weighted_sum += np.array(coordinates) * weight
+
+        if total_weight == 0:
+            return None
+        return weighted_sum / total_weight
+
+    def calculate_total_center_of_mass(self):
+        """
+        全体の重心を計算する
+        """
+        left_com = self.calculate_leg_center_of_mass('left')
+        right_com = self.calculate_leg_center_of_mass('right')
+
+        if left_com is None or right_com is None:
+            return None
+
+        total_weight = sum(self.weights.values())
+        weighted_sum = left_com * sum(self.weights.values()) / 2 + right_com * sum(self.weights.values()) / 2
+
+        return weighted_sum / total_weight
+
     def align_legs_to_ground(self):
         left_points = self.left_leg.get_original_points()
         right_points = self.right_leg.get_original_points()
@@ -63,22 +105,41 @@ class Hip:
         angle_deg = np.degrees(angle_rad)
         return angle_deg if -180 <= angle_deg <= 180 else angle_deg - 360 * np.sign(angle_deg)
     
+        # 重心の計算と表示
+        left_com = self.calculate_leg_center_of_mass('left')
+        right_com = self.calculate_leg_center_of_mass('right')
+        total_com = self.calculate_total_center_of_mass()
+
+        print(f"Left leg center of mass: {left_com}")
+        print(f"Right leg center of mass: {right_com}")
+        print(f"Total center of mass: {total_com}")
+
 if __name__ == "__main__":
     # extended_kinematicsと同様にデフォルトのリンクの数値のメカ構造を生成
     # Y=0の地面に対して、左脚の足先E-Fが平行になるように回転させてリンクを変化させる
 
-    hip = Hip()
+    hip = Hip(ground_y=0)
 
     B1 = (50, -100 + 200)
     B2 = (-50, -100 + 200)
-    hip.setup(B1, B2)
+    hip.set_leg_param(150, 200, 150, 150, B1, B2)
+
+    #の設定
+    weights = {
+        'B1': 1, 'B2': 1,
+        'M1': 2, 'M2': 2,
+        'X': 3,
+        'E': 1, 'F': 1
+    }
+    hip.set_weights(weights)
 
     initial_angles = {
         'left': {'theta1': -50, 'theta2': -120, 'thetaF': -60},
         'right': {'theta1': -50, 'theta2': -120, 'thetaF': -60}
     }
 
-    hip.set_leg_angles('left', *initial_angles['left'])
-    hip.set_leg_angles('right', *initial_angles['right'])
+    for leg in ['left', 'right']:
+        hip.set_leg_angles(leg, **initial_angles[leg])
 
     hip.compute_forward_kinematics()
+    hip.align_legs_to_ground()
