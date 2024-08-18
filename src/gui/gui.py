@@ -57,8 +57,8 @@ class GUI:
 
     def on_range_check(self):
         # kinematics_app.pyの範囲確認メソッドを呼び出す
-        self.master.check_range()
-        
+        self.master.check_range(10)
+
     def set(self, leg, angle, value):
         self.sliders[leg][angle].set(value)
 

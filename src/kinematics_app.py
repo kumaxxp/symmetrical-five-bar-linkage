@@ -162,9 +162,10 @@ class KinematicsApp(tk.Tk):
         self.visualization.draw_transformed_kinematics(self.hip)
         self.gui.canvas.update()
 
-    def check_range(self):
+    def check_range(self, step=1):
         """
         リンクの移動範囲を確認する
+        step: 角度の刻み幅（デフォルトは1度）
         """
         angleF = 60
 
@@ -172,24 +173,26 @@ class KinematicsApp(tk.Tk):
         progress_window = tk.Toplevel(self)
         progress_window.title('Calculating...')
         progress_var = tk.DoubleVar()
-        progress_bar = ttk.Progressbar(progress_window, variable=progress_var, maximum=360*360)
+        total_steps = (360 // step) * (360 // step)
+        progress_bar = ttk.Progressbar(progress_window, variable=progress_var, maximum=total_steps)
         progress_bar.pack(pady=10, padx=10, fill=tk.X)
 
         # 計算を別スレッドで開始
-        thread = threading.Thread(target=self._calculate_range, args=(progress_window, progress_var, angleF))
+        thread = threading.Thread(target=self._calculate_range, args=(progress_window, progress_var, angleF, step))
         thread.start()
 
-    def _calculate_range(self, progress_window, progress_var, angleF):
+    def _calculate_range(self, progress_window, progress_var, angleF, step):
         # angle1,angle2の組み合わせで有効/無効を記載する2次元配列を初期化
-        valid_combinations = np.zeros((360, 360), dtype=bool)
+        size = 360 // step
+        valid_combinations = np.zeros((size, size), dtype=bool)
 
         count = 0
-        for angle1 in range(-180, 180, 1):
-            for angle2 in range(-180, 180, 1):
+        for i, angle1 in enumerate(range(-180, 180, step)):
+            for j, angle2 in enumerate(range(-180, 180, step)):
                 try:
                     self.hip.set_leg_angles('left', angle1, angle2, angleF)
                     self.hip.left_leg.compute_forward_kinematics()
-                    valid_combinations[angle1 + 180, angle2 + 180] = True
+                    valid_combinations[i, j] = True
                 except Exception as e:
                     pass
 
@@ -198,9 +201,9 @@ class KinematicsApp(tk.Tk):
                 progress_window.update()  # GUIを更新
 
         progress_window.destroy()
-        self.show_results(valid_combinations)
+        self.show_results(valid_combinations, step)
 
-    def show_results(self, valid_combinations):
+    def show_results(self, valid_combinations, step):
         result_window = tk.Toplevel(self)
         result_window.title('Valid Combinations')
 
@@ -208,13 +211,15 @@ class KinematicsApp(tk.Tk):
         im = ax.imshow(valid_combinations, cmap='RdYlGn', interpolation='nearest', origin='lower')
         ax.set_xlabel('Angle 2')
         ax.set_ylabel('Angle 1')
-        ax.set_title('Valid Angle Combinations')
+        ax.set_title(f'Valid Angle Combinations (Step: {step}°)')
 
         # Set tick labels
-        ax.set_xticks(np.arange(0, 361, 60))
-        ax.set_yticks(np.arange(0, 361, 60))
-        ax.set_xticklabels(np.arange(-180, 181, 60))
-        ax.set_yticklabels(np.arange(-180, 181, 60))
+        size = 360 // step
+        tick_step = max(1, size // 6)  # 6つ以下のティックになるように調整
+        ax.set_xticks(np.arange(0, size + 1, tick_step))
+        ax.set_yticks(np.arange(0, size + 1, tick_step))
+        ax.set_xticklabels(np.arange(-180, 181, tick_step * step))
+        ax.set_yticklabels(np.arange(-180, 181, tick_step * step))
 
         plt.colorbar(im)
 
@@ -226,6 +231,5 @@ class KinematicsApp(tk.Tk):
         total_count = valid_combinations.size
         percentage = (valid_count / total_count) * 100
 
-        result_label = tk.Label(result_window, 
-                                text=f"Valid combinations: {valid_count}/{total_count} ({percentage:.2f}%)")
+        result_label = tk.Label(result_window,text=f"Valid combinations: {valid_count}/{total_count} ({percentage:.2f}%)")
         result_label.pack()
