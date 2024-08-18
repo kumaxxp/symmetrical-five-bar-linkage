@@ -43,6 +43,7 @@ class AngleTable4D:
         """
         テーブルを生成する。
         コールバック関数を使ってデータを生成し、テーブルに格納する。
+        エラーが発生した場合は空の辞書を格納する。
         """
         for i in range(self.dim_size):
             for j in range(self.dim_size):
@@ -54,9 +55,15 @@ class AngleTable4D:
                         angle_k = self.angle_range[k]
                         angle_l = self.angle_range[l]
                         
-                        # コールバック関数を使用してデータを生成
-                        result_dict = self.data_callback(angle_i, angle_j, angle_k, angle_l)
+                        try:
+                            # コールバック関数を使用してデータを生成
+                            result_dict = self.data_callback(angle_i, angle_j, angle_k, angle_l)
+                        except Exception as e:
+                            print(f"Error occurred for angles: {angle_i}, {angle_j}, {angle_k}, {angle_l}. Error: {e}")
+                            result_dict = {}  # エラーが発生した場合は空の用
+                        
                         self.table_4d[i, j, k, l] = result_dict
+
 
     def get_data_by_angle(self, angle1, angle2, angle3, angle4):
         """
@@ -78,6 +85,7 @@ class AngleTable4D:
         if index1 is not None and index2 is not None and index3 is not None and index4 is not None:
             return self.table_4d[index1, index2, index3, index4]
         else:
+            print(angle1, angle2, angle3, angle4)
             raise ValueError("指定された角度が範囲外です。")
 
     def __repr__(self):
@@ -123,16 +131,16 @@ class AngleTableManager:
 # 使用例
 if __name__ == "__main__":
     # 上位クラスのインスタンスを作成
-    manager = AngleTableManager(step=0.1)
+    manager = AngleTableManager(step=10.0)
 
     # テーブルを生成
     manager.create_table()
 
     # 角度で直接データを取得
-    angle1 = 0.0
-    angle2 = 0.1
-    angle3 = -0.1
-    angle4 = 0.0
+    angle1 = 20.0
+    angle2 = 20.0
+    angle3 = 20.0
+    angle4 = 20.0
 
     result = manager.get_data(angle1, angle2, angle3, angle4)
     print(f"角度 ({angle1}, {angle2}, {angle3}, {angle4}) に対応するデータ: {result}")
