@@ -10,6 +10,7 @@ class GUI:
         self.setup_frames()
         self.setup_sliders()
         self.setup_canvas()
+        self.setup_button()
 
     def setup_frames(self):
         self.main_frame = ttk.Frame(self.master)
@@ -50,6 +51,14 @@ class GUI:
         self.angle_labels[leg][angle].config(text=f"{value:.1f}")
         self.master.update_plot()
 
+    def setup_button(self):
+        self.range_check_button = ttk.Button(self.left_frame, text="Check Range", command=self.on_range_check)
+        self.range_check_button.pack(fill=tk.X, padx=5, pady=10)
+
+    def on_range_check(self):
+        # kinematics_app.pyの範囲確認メソッドを呼び出す
+        self.master.check_range()
+        
     def set(self, leg, angle, value):
         self.sliders[leg][angle].set(value)
 
