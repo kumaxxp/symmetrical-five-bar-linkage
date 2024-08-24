@@ -4,7 +4,7 @@ import numpy as np
 class Visualization:
     def __init__(self, canvas):
         self.canvas = canvas
-        self.scale = 1.0
+        self.scale = 0.7
         self.offset_x = 0
         self.offset_y = 0
         self.grid_items = []

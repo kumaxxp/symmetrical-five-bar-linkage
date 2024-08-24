@@ -232,6 +232,31 @@ class ExtendedKinematics(ForwardKinematics):
             "W42": self.W42
 
         }
+    
+    def get_length_info(self):
+        """
+        ポイント間の距離をフォーマットして返す
+        :return: フォーマットされた結果
+        """
+
+        # W1とW11の二点間の距離
+        lW1_W11  = np.linalg.norm(np.array(self.W1) - np.array(self.W11))
+        lW11_W12 = np.linalg.norm(np.array(self.W11) - np.array(self.W12))
+        self.diff_W1 = lW1_W11 + lW11_W12
+        
+        lW2_W21  = np.linalg.norm(np.array(self.W2) - np.array(self.W21))
+        lW21_W22 = np.linalg.norm(np.array(self.W21)- np.array(self.W22))
+        self.diff_W2 = lW2_W21 + lW21_W22
+
+        self.diff_W3 = np.linalg.norm(np.array(self.W31) - np.array(self.W32))
+        self.diff_W4 = np.linalg.norm(np.array(self.W41) - np.array(self.W42))
+
+        return {
+            "W1-W11-W12": self.diff_W1,
+            "W2-W21-W22": self.diff_W2,
+            "W31-W32": self.diff_W3,
+            "W41-W42": self.diff_W4
+        }
 
     def apply_transformation(self, transformer):
         """

@@ -122,6 +122,15 @@ class Hip:
         print(f"Right leg center of mass: {right_com}")
         print(f"Total center of mass: {total_com}")
 
+    def display_length_info(self):
+        left_info = self.left_leg.get_length_info()
+        right_info = self.right_leg.get_length_info()
+        return {
+            'left': left_info,
+            'right': right_info
+        }
+
+
 if __name__ == "__main__":
     # extended_kinematicsと同様にデフォルトのリンクの数値のメカ構造を生成
     # Y=0の地面に対して、左脚の足先E-Fが平行になるように回転させてリンクを変化させる

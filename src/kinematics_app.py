@@ -161,6 +161,12 @@ class KinematicsApp(tk.Tk):
         # 重心を計算する
         self.hip.calculate_total_center_of_mass()
 
+        # 長さ情報を取得
+        length_info = self.hip.display_length_info()
+
+        # GUIに長さ情報を反映
+        self.gui.update_length_info(length_info)        
+
         self.visualization.draw_transformed_kinematics(self.hip)
         self.gui.canvas.update()
 
@@ -233,5 +239,15 @@ class KinematicsApp(tk.Tk):
         total_count = valid_combinations.size
         percentage = (valid_count / total_count) * 100
 
-        result_label = tk.Label(result_window,text=f"Valid combinations: {valid_count}/{total_count} ({percentage:.2f}%)")
+        result_label = tk.Label(result_window, text=f"Valid combinations: {valid_count}/{total_count} ({percentage:.2f}%)")
         result_label.pack()
+
+        # 長さ情報を表示
+        length_info = self.hip.display_length_info()
+        for leg in ['left', 'right']:
+            leg_info = length_info[leg]
+            info_text = f"{leg.capitalize()} leg:\n"
+            for key, value in leg_info.items():
+                info_text += f"{key}: {value:.2f}\n"
+            info_label = tk.Label(result_window, text=info_text, justify=tk.LEFT)
+            info_label.pack(side=tk.LEFT, padx=10)
