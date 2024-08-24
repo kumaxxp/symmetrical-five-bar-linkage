@@ -12,7 +12,7 @@ class Hip:
         self.left_com = None
         self.right_com = None
 
-    def set_leg_param(self, b, m, e, f, B1, B2, W1, W2):
+    def set_leg_param(self, b, m, e, f, B1, B2, W1, W2, w):
         """
         両足のパラメータを設定する
         :param b: B1-M1 および B2-M2 のリンク長
@@ -23,10 +23,11 @@ class Hip:
         :param B2: B2の座標 (x, y)
         :param W1: W1の座標 (x, y)
         :param W2: W2の座標 (x, y)
+        :param w: リンクとワイヤーの距離
         """
 
-        self.left_leg = ExtendedKinematics(b, m, e, f, B1, B2, W1, W2)
-        self.right_leg = ExtendedKinematics(b, m, e, f, B1, B2, W1, W2)
+        self.left_leg = ExtendedKinematics(b, m, e, f, B1, B2, W1, W2, w)
+        self.right_leg = ExtendedKinematics(b, m, e, f, B1, B2, W1, W2, w)
 
     def set_leg_angles(self, leg, theta1, theta2, thetaF):
         if leg not in ['left', 'right']:
@@ -131,7 +132,7 @@ if __name__ == "__main__":
     B2 = (-50, -100 + 200)
     W1 = (60, -100 + 200)
     W2 = (-60, -100 + 200)
-    hip.set_leg_param(150, 200, 150, 150, B1, B2, W1, W2)
+    hip.set_leg_param(150, 200, 150, 150, B1, B2, W1, W2, 20)
 
     #の設定
     weights = {
