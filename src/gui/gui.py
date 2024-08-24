@@ -11,10 +11,7 @@ class GUI:
         self.setup_sliders()
         self.setup_canvas()
         self.setup_button()
-
-        # 長さ情報を表示するためのテキストウィジェットを追加
-        self.length_info_text = tk.Text(self.master, height=10, width=50)
-        self.length_info_text.pack(side=tk.BOTTOM, padx=10, pady=10)     
+        self.setup_text()
 
     def setup_frames(self):
         self.main_frame = ttk.Frame(self.master)
@@ -60,6 +57,11 @@ class GUI:
         self.range_check_button = ttk.Button(self.left_frame, text="Check Range", command=self.on_range_check)
         self.range_check_button.pack(fill=tk.X, padx=5, pady=10)
 
+    def setup_text(self):
+        # 長さ情報を表示するためのテキストウィジェットを追加
+        self.length_info_text = tk.Text(self.left_frame, height=10, width=50)
+        self.length_info_text.pack(side=tk.BOTTOM, padx=10, pady=10)    
+
     def on_range_check(self):
         # kinematics_app.pyの範囲確認メソッドを呼び出す
         self.master.check_range(1)
@@ -71,10 +73,10 @@ class GUI:
         return self.sliders[leg][angle].get()
 
     def update_length_info(self, length_info):
-        self.length_info_text.delete('1.0', tk.END)  # テキストをクリア
-        for leg in ['left', 'right']:
-            leg_info = length_info[leg]
-            self.length_info_text.insert(tk.END, f"{leg.capitalize()} leg:\n")
-            for key, value in leg_info.items():
-                self.length_info_text.insert(tk.END, f"{key}: {value:.2f}\n")
-            self.length_info_text.insert(tk.END, "\n")
+            self.length_info_text.delete('1.0', tk.END)  # テキストをクリア
+            for leg in ['left', 'right']:
+                leg_info = length_info[leg]
+                self.length_info_text.insert(tk.END, f"{leg.capitalize()} leg:\n")
+                for key, value in leg_info.items():
+                    self.length_info_text.insert(tk.END, f"{key}: {value:.2f}\n")
+                self.length_info_text.insert(tk.END, "\n")
