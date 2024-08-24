@@ -126,8 +126,8 @@ class Visualization:
             #        self.kinematics_items[leg][key] = self.canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width)
 
     def update_points(self, points, leg):
-        for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F', 'W1', 'W2', 'W12', 'W22'],
-                                ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan', 'red', 'red', 'red', 'red']):
+        for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F', 'W1', 'W2', 'W11', 'W21', 'W12', 'W22'],
+                                ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan', 'red', 'red', 'red', 'red', 'red', 'red']):
             if points[point] is not None:
                 x, y = self.transform_point(points[point])
                 if leg == 'right':
