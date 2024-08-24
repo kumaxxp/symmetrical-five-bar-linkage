@@ -107,6 +107,7 @@ class Visualization:
         # self.canvas.create_text(x, y-15, text=label, fill=color)
 
     def update_links(self, points, leg):
+        # リンクの表示
         for start, end, color in [('B1', 'M1', 'red'), ('M1', 'X', 'blue'), ('X', 'M2', 'green'),
                                   ('M2', 'B2', 'yellow'), ('X', 'E', 'magenta'), ('E', 'F', 'cyan')]:
             if points[start] is not None and points[end] is not None:
@@ -118,7 +119,19 @@ class Visualization:
                 else:
                     link_width = 4
                 self.canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width)
-                
+
+        # ワイヤーの表示
+        for start, end, color in [('W1', 'W11', 'black'), ('W11', 'W12', 'blue'), 
+                                  ('W2', 'W21', 'black'), ('W21', 'W22', 'blue'),
+                                  ('W3', 'W4', 'black') ]:
+            if points[start] is not None and points[end] is not None:
+                x1, y1 = self.transform_point(points[start])
+                x2, y2 = self.transform_point(points[end])
+                if leg == 'right':
+                    color = self.lighten_color(color, amount=150)
+                link_width = 2
+                self.canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width, dash=(4, 4))
+
             #    key = f"{start}-{end}"
             #    if key in self.kinematics_items[leg]:
             #        self.canvas.coords(self.kinematics_items[leg][key], x1, y1, x2, y2)
@@ -126,8 +139,9 @@ class Visualization:
             #        self.kinematics_items[leg][key] = self.canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width)
 
     def update_points(self, points, leg):
-        for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F', 'W1', 'W2', 'W11', 'W21', 'W12', 'W22'],
-                                ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan', 'red', 'red', 'red', 'red', 'red', 'red']):
+        # 関節の表示
+        for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
+                                ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan']):
             if points[point] is not None:
                 x, y = self.transform_point(points[point])
                 if leg == 'right':
@@ -136,6 +150,17 @@ class Visualization:
                 self.canvas.create_oval(x-3, y-3, x+3, y+3, fill=color)
                 coord_text = f'({points[point][0]:.0f}, {points[point][1]:.0f})'
                 self.canvas.create_text(x+10, y+10, text=coord_text, anchor='sw')
+
+        # 腱や筋肉の接合部の表示(座標は書かない)
+        for point, color in zip(['W1', 'W2', 'W11', 'W21', 'W12', 'W22', 'W3', 'W4'], 
+                                ['red', 'red', 'red', 'red', 'red', 'red', 'red', 'red']):
+            if points[point] is not None:
+                x, y = self.transform_point(points[point])
+                if leg == 'right':
+                    color = self.lighten_color(color, amount=150)
+                
+                self.canvas.create_oval(x-5, y-5, x+5, y+5, fill=color)
+
 
     def transform_point(self, point):
         return (point[0] * self.scale + self.offset_x, -point[1] * self.scale + self.offset_y)

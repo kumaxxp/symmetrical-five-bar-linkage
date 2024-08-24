@@ -4,20 +4,52 @@ import matplotlib.pyplot as plt
 from kinematics.linkage_kinematics import ForwardKinematics
 from kinematics.transformation import Transformation2D
 
-def calculate_WirePoint(P1, P2, W1, w):
+def calculate_HardPoint(P1, P2, shift = 0):
     """
-    P1-P2の直線に直交し、P2を通る直線l上で、P2からwの距離にある点のうち、W1に近い方をW2として計算する。
+    P1-P2の直線上で、P1からshiftの距離にある点を計算する
 
     :param P1: 点P1の座標 (x1, y1)
     :param P2: 点P2の座標 (x2, y2)
-    :param W1: 点W1の座標 (x_w1, y_w1)
+    :param shift: P1からの距離
+    :return: shiftした座標 (x, y)
+    """
+    x1, y1 = P1
+    x2, y2 = P2
+
+    # 方向ベクトルを計算
+    dx = x2 - x1
+    dy = y2 - y1
+
+    # ベクトルの長さを計算
+    length = math.sqrt(dx**2 + dy**2)
+
+    # ベクトルを正規化（単位ベクトルにする）
+    if length != 0:
+        unit_dx = dx / length
+        unit_dy = dy / length
+    else:
+        return P1  # P1とP2が同じ点の場合、P1を返す
+
+    # shiftした座標を計算
+    x = x1 + shift * unit_dx
+    y = y1 + shift * unit_dy
+
+    return (x, y)
+
+def calculate_WirePoint(P1, P2, w, side='left'):
+    """
+    P1-P2の直線に直交し、P2を通る直線l上で、P2からwの距離にある点のうち、
+    指定された側（左または右）に位置する点をW2として計算する。
+
+    :param P1: 点P1の座標 (x1, y1)
+    :param P2: 点P2の座標 (x2, y2)
     :param w: P2からW2までの距離
+    :param side: 'left'または'right'を指定。デフォルトは'left'
     :return: W2の座標 (x, y)
     """
     # ステップ1: ベクトルP1P2の定義
     x1, y1 = P1
     x2, y2 = P2
-    x_w1, y_w1 = W1
     v = np.array([x2 - x1, y2 - y1])
 
     # ステップ2: P1P2に直交するベクトルの計算
@@ -30,11 +62,15 @@ def calculate_WirePoint(P1, P2, W1, w):
     W2_candidate1 = P2 + w * v_perp_norm
     W2_candidate2 = P2 - w * v_perp_norm
 
-    # ステップ5: W1に近い方をW2として選択
-    dist1 = np.linalg.norm(W2_candidate1 - W1)
-    dist2 = np.linalg.norm(W2_candidate2 - W1)
+    # ステップ5: 各候補点がP1-P2ベクトルの左側にあるか右側にあるかを判定
+    cross_product1 = np.cross(v, W2_candidate1 - np.array(P1))
+    cross_product2 = np.cross(v, W2_candidate2 - np.array(P1))
 
-    W2 = W2_candidate1 if dist1 < dist2 else W2_candidate2
+    # ステップ6: 指定された側に応じてW2を選択
+    if side == 'left':
+        W2 = W2_candidate1 if cross_product1 > 0 else W2_candidate2
+    else:  # 'right'
+        W2 = W2_candidate2 if cross_product1 < 0 else W2_candidate2
 
     return tuple(W2)
 
@@ -115,11 +151,15 @@ class ExtendedKinematics(ForwardKinematics):
         """
         super().compute_forward_kinematics()
         self.F = self.calculate_F()
-        self.W11 = calculate_WirePoint(self.B1, self.M1, self.W1, self.w)
-        self.W21 = calculate_WirePoint(self.B2, self.M2, self.W2, self.w)
+        self.W11 = calculate_WirePoint(self.B1, self.M1, self.w, 'left')
+        self.W21 = calculate_WirePoint(self.B2, self.M2, self.w, 'right')
 
-        self.W12 = calculate_WirePoint(self.X, self.M1, self.W11, self.w)
-        self.W22 = calculate_WirePoint(self.X, self.M2, self.W21, self.w)
+        self.W12 = calculate_WirePoint(self.X, self.M1, self.w, 'right')
+        self.W22 = calculate_WirePoint(self.X, self.M2, self.w, 'left')
+
+        self.W3 = calculate_HardPoint(self.X, self.M2, 20)
+
+        self.W4 = calculate_HardPoint(self.E, self.F, -20)
 
         self.points = self.format_result()
 
@@ -183,7 +223,10 @@ class ExtendedKinematics(ForwardKinematics):
             "W11": self.W11,
             "W12": self.W12,
             "W21": self.W21,
-            "W22": self.W22
+            "W22": self.W22,
+            "W3": self.W3,
+            "W4": self.W4
+
         }
 
     def apply_transformation(self, transformer):
