@@ -4,6 +4,37 @@ import matplotlib.pyplot as plt
 from kinematics.linkage_kinematics import ForwardKinematics
 from kinematics.transformation import Transformation2D
 
+def calculate_WirePoint(P1, P2, W1, w):
+    """
+    P1-P2の直線に直交し、P2を通る直線l上で、P2からwの距離にある点のうち、P1に近い方をW2として計算する。
+
+    :param P1: 点P1の座標 (x1, y1)
+    :param P2: 点P2の座標 (x2, y2)
+    :param W1: 点W1の座標 (不使用だが、将来の拡張のために残す)
+    :param w: P2からW2までの距離
+    :return: W2の座標 (x, y)
+    """
+    # ステップ1: ベクトルP1P2の定義
+    x1, y1 = P1
+    x2, y2 = P2
+    v = np.array([x2 - x1, y2 - y1])
+
+    # ステップ2: P1P2に直交するベクトルの計算
+    v_perp = np.array([-v[1], v[0]])
+    
+    # ステップ3: v_perpの正規化
+    v_perp_norm = v_perp / np.linalg.norm(v_perp)
+
+    # ステップ4: W2の座標を計算
+    # P2からv_perp_normの方向にw距離だけ移動した点が2つあるが、
+    # W1に近い方を選択するために、v_perp_normの向きをP1P2ベクトルと一
+    if np.dot(v, v_perp_norm) > 0:
+        v_perp_norm = -v_perp_norm
+
+    W2 = P2 + w * v_perp_norm
+
+    return tuple(W2)    
+
 def calculate_P3(P1, P2, L, theta):
     """
     P1からP2へのベクトルとP1からP3へのベクトルを用いてP3の位置を計算する関数
@@ -35,7 +66,7 @@ def calculate_P3(P1, P2, L, theta):
     return (x3, y3)
 
 class ExtendedKinematics(ForwardKinematics):
-    def __init__(self, b, m, e, f, B1, B2):
+    def __init__(self, b, m, e, f, B1, B2, W1, W2):
         """
         初期化メソッド
         :param b: B1-M1 および B2-M2 のリンク長
@@ -44,16 +75,20 @@ class ExtendedKinematics(ForwardKinematics):
         :param f: 追加リンクの長さ
         :param B1: B1の座標 (x, y)
         :param B2: B2の座標 (x, y)
+        :param W1: W1の座標 (x, y)
+        :param W2: W2の座標 (x, y)
         """
         super().__init__(b, m, e, B1, B2)
         self.f = f
         self.F = None
         self.thetaF = 0
         self.points = {}
-        self.transformed_points = {}
+        transformed_points = {}
         self.rotated_points = {}
         self.B1 = B1
         self.B2 = B2
+        self.W1 = W1
+        self.W2 = W2
         self.theta1 = 0
         self.theta2 = 0
 
@@ -71,12 +106,44 @@ class ExtendedKinematics(ForwardKinematics):
 
     def compute_forward_kinematics(self):
         """
-        順運動学を計算し、Fの位置を含める
+        順運動学を計算し、F, W1, W2の位置を含める
         """
         super().compute_forward_kinematics()
         self.F = self.calculate_F()
+        #self.W1 = self.calculate_W1()
+        #self.W2 = self.calculate_W2()
         self.points = self.format_result()
-    #    self.transformed_points = self.points.copy()
+
+    def calculate_W1(self):
+        """
+        W1の位置を計算
+        """
+        # ここでW1の位置を計算するロジックを実装
+        # B1-M1の直線を計算する。また、B1-M1に直交し、M1を通る直線l1を計算する。
+        # l1の線分上にあり、M1からL1の距離にある点のうち、W1に近いものをW12とする。
+
+    def calculate_W2(self):
+        """
+        W2の位置を計算
+        """
+        # ここでW2の位置を計算するロジックを実装
+        # 例: B2とM2の中点とする
+        return ((self.B2[0] + self.M2[0]) / 2, (self.B2[1] + self.M2[1]) / 2)
+
+    def get_W1_position(self):
+        """
+        W1の位置を取得する
+        :return: W1の座標
+        """
+        return self.W1
+
+    def get_W2_position(self):
+        """
+        W2の位置を取得する
+        :return: W2の座標
+        """
+        return self.W2
+
 
     def calculate_F(self):
         """
@@ -131,7 +198,9 @@ class ExtendedKinematics(ForwardKinematics):
             "E": self.E,
             "F": self.F,
             "X1": self.X1,
-            "X2": self.X2
+            "X2": self.X2,
+            "W1": self.W1,
+            "W2": self.W2
         }
 
     def apply_transformation(self, transformer):

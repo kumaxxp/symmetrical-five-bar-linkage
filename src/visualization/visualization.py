@@ -4,7 +4,7 @@ import numpy as np
 class Visualization:
     def __init__(self, canvas):
         self.canvas = canvas
-        self.scale = 0.5
+        self.scale = 1.0
         self.offset_x = 0
         self.offset_y = 0
         self.grid_items = []
@@ -126,8 +126,8 @@ class Visualization:
             #        self.kinematics_items[leg][key] = self.canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width)
 
     def update_points(self, points, leg):
-        for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F'],
-                                ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan']):
+        for point, color in zip(['B1', 'M1', 'X', 'M2', 'B2', 'E', 'F', 'W1', 'W2'],
+                                ['red', 'red', 'blue', 'green', 'green', 'magenta', 'cyan', 'red', 'red']):
             if points[point] is not None:
                 x, y = self.transform_point(points[point])
                 if leg == 'right':
