@@ -123,7 +123,7 @@ class Visualization:
         # ワイヤーの表示
         for start, end, color in [('W1', 'W11', 'black'), ('W11', 'W12', 'blue'), 
                                   ('W2', 'W21', 'black'), ('W21', 'W22', 'blue'),
-                                  ('W3', 'W4', 'black') ]:
+                                  ('W31', 'W32', 'black'), ('W41', 'W42', 'black') ]:
             if points[start] is not None and points[end] is not None:
                 x1, y1 = self.transform_point(points[start])
                 x2, y2 = self.transform_point(points[end])
@@ -152,8 +152,8 @@ class Visualization:
                 self.canvas.create_text(x+10, y+10, text=coord_text, anchor='sw')
 
         # 腱や筋肉の接合部の表示(座標は書かない)
-        for point, color in zip(['W1', 'W2', 'W11', 'W21', 'W12', 'W22', 'W3', 'W4'], 
-                                ['red', 'red', 'red', 'red', 'red', 'red', 'red', 'red']):
+        for point, color in zip(['W1', 'W2', 'W11', 'W21', 'W12', 'W22', 'W31', 'W32', 'W41', 'W42'], 
+                                ['red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red']):
             if points[point] is not None:
                 x, y = self.transform_point(points[point])
                 if leg == 'right':

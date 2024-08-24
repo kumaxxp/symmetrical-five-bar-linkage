@@ -157,9 +157,11 @@ class ExtendedKinematics(ForwardKinematics):
         self.W12 = calculate_WirePoint(self.X, self.M1, self.w, 'right')
         self.W22 = calculate_WirePoint(self.X, self.M2, self.w, 'left')
 
-        self.W3 = calculate_HardPoint(self.X, self.M2, 20)
+        self.W31 = calculate_HardPoint(self.X, self.M2, 20)
+        self.W32 = calculate_HardPoint(self.E, self.F, -20)
 
-        self.W4 = calculate_HardPoint(self.E, self.F, -20)
+        self.W41 = calculate_WirePoint(self.E, self.X, self.w, 'right')
+        self.W42 = calculate_HardPoint(self.E, self.F, 20)
 
         self.points = self.format_result()
 
@@ -224,8 +226,10 @@ class ExtendedKinematics(ForwardKinematics):
             "W12": self.W12,
             "W21": self.W21,
             "W22": self.W22,
-            "W3": self.W3,
-            "W4": self.W4
+            "W31": self.W31,
+            "W32": self.W32,
+            "W41": self.W41,
+            "W42": self.W42
 
         }
 
