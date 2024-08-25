@@ -3,6 +3,8 @@
 ## Project Overview
 This repository contains software for designing and testing symmetrical five-bar linkage mechanisms. It includes the implementation of forward kinematics, inverse kinematics, and analysis features.
 
+![](./image/2024-08-25-08-42-47.png)
+
 ## Directory Structure
 
 ```
