@@ -8,16 +8,36 @@ This repository contains software for designing and testing symmetrical five-bar
 ## Directory Structure
 
 ```
-five-bar-linkage-design/
-├── docs/ # Documentation
-├── src/ # Source code
-│ ├── linkage_kinematics.py
-│ ├── linkage_inverse_kinematics.py
-│ ├── main.py # Main execution script
-├── tests/ # Test code
-├── examples/ # Sample code
-├── .gitignore # Files and directories to ignore
-└── README.md # Project description
+symmetrical-five-bar-linkage/
+├── docs/
+│   ├── architect.md
+│   ├── five_bar_linkage_documentation.md
+│   ├── making_class.md
+│   └── memo.md
+├── examples/
+├── image/
+├── LICENSE
+├── README.md
+├── requirements.txt
+├── src/
+│   ├── __pycache__/
+│   ├── gui/
+│   │   ├── __init__.py
+│   │   └── gui.py
+│   ├── kinematics/
+│   │   ├── __init__.py
+│   │   ├── angle_table_4d.py
+│   │   ├── extended_kinematics.py
+│   │   ├── hip.py
+│   │   ├── linkage_kinematics.py
+│   │   └── transformation.py
+│   ├── kinematics_app.py
+│   ├── main.py
+│   ├── requirements.txt
+│   └── visualization/
+├── tests/
+│   ├── __init__.py
+│   └── test_hip.py
 ```
 
 
@@ -44,14 +64,34 @@ pip install -r requirements.txt
 ```
 
 ```
-five-bar-linkage-design/
-├── docs/            # ドキュメントや資料
-├── src/             # ソースコード
-│   ├── linkage_kinematics.py
-│   ├── linkage_inverse_kinematics.py
-│   ├── main.py      # メインの実行スクリプト
-├── tests/           # テストコード
-├── examples/        # サンプルコードや実行例
-├── .gitignore       # Gitが管理しないファイルの設定
-└── README.md        # プロジェクトの説明
+symmetrical-five-bar-linkage/
+├── docs/
+│   ├── architect.md
+│   ├── five_bar_linkage_documentation.md
+│   ├── making_class.md
+│   └── memo.md
+├── examples/
+├── image/
+├── LICENSE
+├── README.md
+├── requirements.txt
+├── src/
+│   ├── gui/
+│   │   ├── __init__.py
+│   │   └── gui.py
+│   ├── kinematics/
+│   │   ├── __init__.py
+│   │   ├── angle_table_4d.py
+│   │   ├── extended_kinematics.py
+│   │   ├── hip.py
+│   │   ├── linkage_kinematics.py
+│   │   └── transformation.py
+│   ├── kinematics_app.py
+│   ├── main.py
+│   ├── requirements.txt
+│   └── visualization/
+├── tests/
+│   ├── __init__.py
+│   └── test_hip.py
+
 ```
