@@ -125,9 +125,13 @@ class Hip:
     def display_length_info(self):
         left_info = self.left_leg.get_length_info()
         right_info = self.right_leg.get_length_info()
+        left_spring_info = self.left_leg.get_length_info('spring')
+        right_spring_info = self.right_leg.get_length_info('spring')
         return {
             'left': left_info,
-            'right': right_info
+            'right': right_info,
+            'left spring': left_spring_info,
+            'right spring': right_spring_info
         }
 
 

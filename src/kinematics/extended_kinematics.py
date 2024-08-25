@@ -233,11 +233,12 @@ class ExtendedKinematics(ForwardKinematics):
 
         }
     
-    def get_length_info(self):
+    def get_length_info(self, cmd = 'default'):
         """
-        ポイント間の距離をフォーマットして返す
+        ポイントにむずびつけられたワイヤーの長さを返す
         :return: フォーマットされた結果
         """
+
 
         # W1とW11の二点間の距離
         lW1_W11  = np.linalg.norm(np.array(self.W1) - np.array(self.W11))
@@ -251,12 +252,38 @@ class ExtendedKinematics(ForwardKinematics):
         self.diff_W3 = np.linalg.norm(np.array(self.W31) - np.array(self.W32))
         self.diff_W4 = np.linalg.norm(np.array(self.W41) - np.array(self.W42))
 
-        return {
-            "W1-W11-W12": self.diff_W1,
-            "W2-W21-W22": self.diff_W2,
-            "W31-W32": self.diff_W3,
-            "W41-W42": self.diff_W4
-        }
+        if cmd == 'default': # ワイヤーの長さ
+
+            return {
+                "W1-W11-W12": self.diff_W1,
+                "W2-W21-W22": self.diff_W2,
+                "W31-W32": self.diff_W3,
+                "W41-W42": self.diff_W4
+            }
+
+        elif cmd == 'spring': # リンクとワイヤーの差。バネ成分
+            return {
+                "W1-W11-W12": self.diff_W1 - self.b,
+                "W2-W21-W22": self.diff_W2 - self.b,
+                "W31-W32": self.diff_W3 - self.e,
+                "W41-W42": self.diff_W4 - self.e
+            }
+        
+        elif cmd == 'diff':
+            return {
+                "W1-W11-W12": lW11_W12,
+                "W2-W21-W22": lW21_W22,
+                "W31-W32": 0,
+                "W41-W42": 0
+            }
+
+        elif cmd == 'link': # ワイヤーと平行なリンクの長さ
+            return {
+                "W1-W11-W12": self.b,
+                "W2-W21-W22": self.b,
+                "W31-W32": self.e,
+                "W41-W42": self.e
+            }
 
     def apply_transformation(self, transformer):
         """

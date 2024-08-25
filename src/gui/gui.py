@@ -59,7 +59,7 @@ class GUI:
 
     def setup_text(self):
         # 長さ情報を表示するためのテキストウィジェットを追加
-        self.length_info_text = tk.Text(self.left_frame, height=10, width=50)
+        self.length_info_text = tk.Text(self.left_frame, height=30, width=60)
         self.length_info_text.pack(side=tk.BOTTOM, padx=10, pady=10)    
 
     def on_range_check(self):
@@ -74,7 +74,7 @@ class GUI:
 
     def update_length_info(self, length_info):
             self.length_info_text.delete('1.0', tk.END)  # テキストをクリア
-            for leg in ['left', 'right']:
+            for leg in ['left', 'right', 'left spring', 'right spring']:
                 leg_info = length_info[leg]
                 self.length_info_text.insert(tk.END, f"{leg.capitalize()} leg:\n")
                 for key, value in leg_info.items():

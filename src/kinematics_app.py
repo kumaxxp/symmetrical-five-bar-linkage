@@ -242,12 +242,3 @@ class KinematicsApp(tk.Tk):
         result_label = tk.Label(result_window, text=f"Valid combinations: {valid_count}/{total_count} ({percentage:.2f}%)")
         result_label.pack()
 
-        # 長さ情報を表示
-        length_info = self.hip.display_length_info()
-        for leg in ['left', 'right']:
-            leg_info = length_info[leg]
-            info_text = f"{leg.capitalize()} leg:\n"
-            for key, value in leg_info.items():
-                info_text += f"{key}: {value:.2f}\n"
-            info_label = tk.Label(result_window, text=info_text, justify=tk.LEFT)
-            info_label.pack(side=tk.LEFT, padx=10)
