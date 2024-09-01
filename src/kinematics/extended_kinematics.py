@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from kinematics.linkage_kinematics import ForwardKinematics
 from kinematics.transformation import Transformation2D
 
-def calculate_HardPoint(P1, P2, shift = 0):
+def calculateHardPoint(P1, P2, shift = 0):
     """
     P1-P2の直線上で、P1からshiftの距離にある点を計算する
 
@@ -36,7 +36,7 @@ def calculate_HardPoint(P1, P2, shift = 0):
 
     return (x, y)
 
-def calculate_WirePoint(P1, P2, w, side='left'):
+def calculateWirePoint(P1, P2, w, side='left'):
     """
     P1-P2の直線に直交し、P2を通る直線l上で、P2からwの距離にある点のうち、
     指定された側（左または右）に位置する点をW2として計算する。
@@ -74,7 +74,7 @@ def calculate_WirePoint(P1, P2, w, side='left'):
 
     return tuple(W2)
 
-def calculate_P3(P1, P2, L, theta):
+def calculateP3(P1, P2, L, theta):
     """
     P1からP2へのベクトルとP1からP3へのベクトルを用いてP3の位置を計算する関数
     :param P1: P1の座標 (x1, y1)
@@ -133,47 +133,47 @@ class ExtendedKinematics(ForwardKinematics):
         self.theta1 = 0
         self.theta2 = 0
 
-    def set_angles(self, theta1, theta2, thetaF):
+    def setAngles(self, theta1, theta2, thetaF):
         """
         モーターの角度設定
         :param theta1: B1-M1 の角度 (度)
         :param theta2: B2-M2 の角度 (度)
         :param thetaF: X-E-F の角度 (度)
         """
-        super().set_angles(theta1, theta2)
+        super().setAngles(theta1, theta2)
         self.thetaF = thetaF
         self.theta1 = theta1
         self.theta2 = theta2
 
-    def compute_forward_kinematics(self):
+    def computeForwardKinematics(self):
         """
         順運動学を計算し、F, W1, W2の位置を含める
         """
-        super().compute_forward_kinematics()
-        self.F = self.calculate_F()
-        self.W11 = calculate_WirePoint(self.B1, self.M1, self.w, 'left')
-        self.W21 = calculate_WirePoint(self.B2, self.M2, self.w, 'right')
+        super().computeForwardKinematics()
+        self.F = self.calculateF()
+        self.W11 = calculateWirePoint(self.B1, self.M1, self.w, 'left')
+        self.W21 = calculateWirePoint(self.B2, self.M2, self.w, 'right')
 
-        self.W12 = calculate_WirePoint(self.X, self.M1, self.w, 'right')
-        self.W22 = calculate_WirePoint(self.X, self.M2, self.w, 'left')
+        self.W12 = calculateWirePoint(self.X, self.M1, self.w, 'right')
+        self.W22 = calculateWirePoint(self.X, self.M2, self.w, 'left')
 
-        self.W31 = calculate_HardPoint(self.X, self.M2, 20)
-        self.W32 = calculate_HardPoint(self.E, self.F, -20)
+        self.W31 = calculateHardPoint(self.X, self.M2, 20)
+        self.W32 = calculateHardPoint(self.E, self.F, -20)
 
-        self.W41 = calculate_WirePoint(self.E, self.X, self.w, 'right')
-        self.W42 = calculate_HardPoint(self.E, self.F, 20)
+        self.W41 = calculateWirePoint(self.E, self.X, self.w, 'right')
+        self.W42 = calculateHardPoint(self.E, self.F, 20)
 
-        self.points = self.format_result()
+        self.points = self.formatResult()
 
 
-    def calculate_F(self):
+    def calculateF(self):
         """
         EからFへの位置を計算
         """
         if self.E is None or self.X is None:
             raise ValueError("EまたはX位置が計算されていません。")
 
-        return calculate_P3(self.E, self.X, self.f, self.thetaF)
+        return calculateP3(self.E, self.X, self.f, self.thetaF)
 
     def calculate(self):
         """
@@ -183,29 +183,29 @@ class ExtendedKinematics(ForwardKinematics):
         result["F"] = self.F
         return result
     
-    def calculate_rotated_points(self, pointSt1, pointEd1, pointSt2, pointEd2):
-        angle_flower = math.degrees(self.angle_between_vectors(pointSt1, pointEd1, pointSt2, pointEd2))
+    def calculateRotatedPoints(self, pointSt1, pointEd1, pointSt2, pointEd2):
+        angle_flower = math.degrees(self.angleBetweenVectors(pointSt1, pointEd1, pointSt2, pointEd2))
         #transformer = Transformation2D(origin=pointSt1, angle=angle_flower, translation=-np.array(pointSt1))
         transformer = Transformation2D(origin=pointSt1, angle=angle_flower, translation=-np.array(pointSt1))
-        self.rotated_points = {key: transformer.transform_point(value) for key, value in self.points.items()}
+        self.rotated_points = {key: transformer.transformPoint(value) for key, value in self.points.items()}
 
-    def calculate_translate_points(self, point_translate):
+    def calculateTranslatePoints(self, point_translate):
         # 回転後にポイントをシフトさせる
         self.rotated_points = {key: point_translate + value for key, value in self.rotated_points.items()}
 
-    def get_rotated_points(self):
+    def getRotatedPoints(self):
         return self.rotated_points
     
-    def get_points(self):
+    def getPoints(self):
         return self.points
 
     @staticmethod
-    def angle_between_vectors(p1, p2, p3, p4):
+    def angleBetweenVectors(p1, p2, p3, p4):
         v1 = np.array(p2) - np.array(p1)
         v2 = np.array(p4) - np.array(p3)
         return math.atan2(np.cross(v1, v2), np.dot(v1, v2))
 
-    def format_result(self):
+    def formatResult(self):
         """
         計算結果をフォーマットして返す
         :return: フォーマットされた結果
@@ -233,7 +233,7 @@ class ExtendedKinematics(ForwardKinematics):
 
         }
     
-    def get_length_info(self, cmd = 'default'):
+    def getLengthInfo(self, cmd = 'default'):
         """
         ポイントにむずびつけられたワイヤーの長さを返す
         :return: フォーマットされた結果
@@ -285,7 +285,7 @@ class ExtendedKinematics(ForwardKinematics):
                 "W41-W42": self.e
             }
 
-    def apply_transformation(self, transformer):
+    def applyTransformation(self, transformer):
         """
         座標変換を適用する
         :param transformer: 変換器オブジェクト
@@ -293,21 +293,21 @@ class ExtendedKinematics(ForwardKinematics):
         for key, point in self.points.items():
             self.transformed_points[key] = transformer.transform_point(point)
 
-    def get_transformed_points(self):
+    def getTransformedPoints(self):
         """
         変換された座標を取得する
         :return: 変換された座標
         """
         return self.transformed_points
 
-    def get_original_points(self):
+    def getOriginalPoints(self):
         """
         元の座標を取得する
         :return: 元の座標
         """
         return self.points
 
-    def get_link_angle(self, vect):
+    def getLinkAngle(self, vect):
         """
         指定された頂点から次の頂点への角度を取得する
         :param vect: 開始頂点の名前 ('B1', 'B2', 'E')
@@ -328,7 +328,7 @@ class ExtendedKinematics(ForwardKinematics):
             raise ValueError("Invalid vect point")
 
 
-    def get_link_points(self):
+    def getLinkPoints(self):
         """
         リンクの端点を取得する
         :return: リンクの端点のリスト
@@ -340,14 +340,14 @@ class ExtendedKinematics(ForwardKinematics):
             (self.E, self.F)
         ]
 
-    def get_link_colors(self):
+    def getLinkColors(self):
         """
         リンクの色を取得する
         :return: リンクの色のリスト
         """
         return ['red', 'green', 'blue', 'purple']
 
-    def get_point_colors(self):
+    def getPointColors(self):
         """
         点の色を取得する
         :return: 点の色の辞書
@@ -373,8 +373,8 @@ if __name__ == "__main__":
     theta1 = -45 
     theta2 = -135 
     thetaF = -60
-    ek.set_angles(theta1, theta2, thetaF)
-    ek.compute_forward_kinematics()
+    ek.setAngles(theta1, theta2, thetaF)
+    ek.computeForwardKinematics()
 
     # 結果を表示
     result = ek.calculate()

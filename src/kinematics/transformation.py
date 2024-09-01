@@ -6,7 +6,7 @@ class Transformation2D:
         self.angle = np.radians(angle)
         self.translation = np.array(translation)
 
-    def transform_point(self, point):
+    def transformPoint(self, point):
         point = np.array(point)
         # 原点を中心に回転
         rotated = self.rotate(point - self.origin)

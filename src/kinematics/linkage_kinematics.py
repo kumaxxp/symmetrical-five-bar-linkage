@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def calculate_interior_angle_sum(points):
+def calculateInteriorAngleSum(points):
     """
     指定された点群から多角形の内角の和を計算します。
     
@@ -11,7 +11,7 @@ def calculate_interior_angle_sum(points):
     Returns:
     - 内角の和（度単位）
     """
-    def angle_between(p1, p2, p3):
+    def angleBetween(p1, p2, p3):
         """
         3点 p1, p2, p3 から角度を計算します。
         """
@@ -39,7 +39,7 @@ def calculate_interior_angle_sum(points):
         p1 = points[i]
         p2 = points[(i + 1) % n]
         p3 = points[(i + 2) % n]
-        angle_sum += angle_between(p1, p2, p3)
+        angle_sum += angleBetween(p1, p2, p3)
     
     return angle_sum
 
@@ -70,7 +70,7 @@ class ForwardKinematics:
         self.theta1 = None
         self.theta2 = None
 
-    def set_angles(self, theta1, theta2):
+    def setAngles(self, theta1, theta2):
         """
         モーターの角度を設定
         :param theta1: B1-M1 の角度 (度)
@@ -80,7 +80,7 @@ class ForwardKinematics:
         self.theta1 = theta1
         self.theta2 = theta2
     
-    def compute_forward_kinematics(self):
+    def computeForwardKinematics(self):
         # 角度をラジアンに変換
         theta1_rad = np.radians(self.theta1)
         theta2_rad = np.radians(self.theta2)
@@ -91,17 +91,17 @@ class ForwardKinematics:
             self.M2 = self.B2 + np.array([self.b * np.cos(theta2_rad), self.b * np.sin(theta2_rad)])
         
             # X の座標を計算
-            self.X = self.calculate_X()
+            self.X = self.calculateX()
         
             # エンドエフェクタ E の座標を計算
-            self.E = self.calculate_E()
+            self.E = self.calculateE()
 
         except ValueError as e:
             print(f"Error in forward kinematics: {e}")
             self.X = None
             self.E = None
 
-    def calculate_E(self):
+    def calculateE(self):
         # 点Eの計算
         X = self.X
         M1 = self.M1
@@ -117,7 +117,7 @@ class ForwardKinematics:
         
         return np.array([E_x, E_y])
 
-    def calculate_X(self):
+    def calculateX(self):
         """
         点 X の座標を計算
         :return: X の座標 (x, y)
@@ -133,7 +133,7 @@ class ForwardKinematics:
         x2, y2 = self.M2
 
         # 円の交点を計算
-        X1,X2 = self.calculate_circle_intersection(x1, y1, r1, x2, y2, r2)
+        X1,X2 = self.calculateCircleIntersection(x1, y1, r1, x2, y2, r2)
     
         self.X1 = X1
         self.X2 = X2
@@ -142,7 +142,7 @@ class ForwardKinematics:
         valid_X = None
         for X_candidate in [X1, X2]:
             points = [self.B1, self.M1, X_candidate, self.M2, self.B2]
-            if self.is_convex(points) :
+            if self.isConvex(points) :
                 valid_X = X_candidate
                 break
         
@@ -152,7 +152,7 @@ class ForwardKinematics:
         return valid_X
 
 
-    def calculate_circle_intersection(self, x1, y1, r1, x2, y2, r2):
+    def calculateCircleIntersection(self, x1, y1, r1, x2, y2, r2):
         """
     2つの円の交点を計算する
         :param x1: 円1の中心のx座標
@@ -186,13 +186,13 @@ class ForwardKinematics:
     def cross(self, x1,y1,x2,y2):
         return x1*y2 - x2*y1
 
-    def is_convex(self, points):
+    def isConvex(self, points):
         """
         凸形状かどうかを判定する
         :param points: 頂点の座標リスト
         :return: 凸形状であれば True, そうでなければ False
         """
-        angle_sum = calculate_interior_angle_sum(points)
+        angle_sum = calculateInteriorAngleSum(points)
         n = len(points)
         expected_angle_sum = (n - 2) * 180  # 内角の和の期待値 (度)
 
@@ -215,9 +215,9 @@ class ForwardKinematics:
         順運動学の計算を行い、結果を返す
         :return: 順運動学の結果
         """
-        return self.format_result()
+        return self.formatResult()
 
-    def format_result(self):
+    def formatResult(self):
         return {
             "B1": self.B1,
             "M1": self.M1,
@@ -229,7 +229,7 @@ class ForwardKinematics:
             "X2": self.X2
         }
 
-def plot_kinematics(fk):
+def plotKinematics(fk):
     """
     順運動学の結果をプロットする
     :param fk: ForwardKinematics インスタンス
@@ -305,8 +305,8 @@ if __name__ == "__main__":
     # モーターの角度を設定 (サンプル値)
     theta1 = -45
     theta2 = -135
-    fk.set_angles(theta1, theta2)
-    fk.compute_forward_kinematics()
+    fk.setAngles(theta1, theta2)
+    fk.computeForwardKinematics()
     
     # 順運動学の結果をプロット
-    plot_kinematics(fk)
+    plotKinematics(fk)

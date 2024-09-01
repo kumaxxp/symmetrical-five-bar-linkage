@@ -32,21 +32,21 @@ class Hip:
     def set_leg_angles(self, leg, theta1, theta2, thetaF):
         if leg not in ['left', 'right']:
             raise ValueError("Invalid leg name. Must be 'left' or 'right'.")
-        getattr(self, f"{leg}_leg").set_angles(theta1, theta2, thetaF)
+        getattr(self, f"{leg}_leg").setAngles(theta1, theta2, thetaF)
 
     def compute_forward_kinematics(self):
-        self.left_leg.compute_forward_kinematics()
-        self.right_leg.compute_forward_kinematics()
+        self.left_leg.computeForwardKinematics()
+        self.right_leg.computeForwardKinematics()
 
     def get_rotated_points(self):
         return {
-            'left': self.left_leg.get_rotated_points(),
-            'right': self.right_leg.get_rotated_points()
+            'left': self.left_leg.getRotatedPoints(),
+            'right': self.right_leg.getRotatedPoints()
         }
 
-    def compute_link_angles(self):
-        self.left_leg.compute_link_angles()
-        self.right_leg.compute_link_angles()
+    def computeLinkAngles(self):
+        self.left_leg.computeLinkAngles()
+        self.right_leg.computeLinkAngles()
 
     def set_weights(self, weights):
         """
@@ -60,7 +60,7 @@ class Hip:
         """
         指定された脚の重心を計算する
         """
-        points = getattr(self, f"{leg}_leg").get_rotated_points()
+        points = getattr(self, f"{leg}_leg").getRotatedPoints()
         weight = 0
         total_weight = 0
         weighted_sum = np.array([0.0, 0.0])
@@ -91,19 +91,19 @@ class Hip:
         self.center_com = weighted_sum / total_weight
 
     def align_legs_to_ground(self):
-        left_points = self.left_leg.get_original_points()
-        right_points = self.right_leg.get_original_points()
+        left_points = self.left_leg.getOriginalPoints()
+        right_points = self.right_leg.getOriginalPoints()
 
         # 左脚を地面に合わせて回転
-        self.left_leg.calculate_rotated_points(left_points['E'], left_points['F'], (0, 0), (1, 0))
+        self.left_leg.calculateRotatedPoints(left_points['E'], left_points['F'], (0, 0), (1, 0))
 
         # 回転後の左脚のB1, B2の位置を取得
-        rotated_left_points = self.left_leg.get_rotated_points()
+        rotated_left_points = self.left_leg.getRotatedPoints()
 
         # 右脚をB1, B2に合わせて回転と平行移動
-        self.right_leg.calculate_rotated_points(left_points['B2'], left_points['B1'], rotated_left_points['B2'], rotated_left_points['B1'])
+        self.right_leg.calculateRotatedPoints(left_points['B2'], left_points['B1'], rotated_left_points['B2'], rotated_left_points['B1'])
         
-        self.right_leg.calculate_translate_points(rotated_left_points['B2'])
+        self.right_leg.calculateTranslatePoints(rotated_left_points['B2'])
 
     @staticmethod
     def _angle_between_vectors(v1_start, v1_end, v2_start, v2_end):
@@ -123,12 +123,12 @@ class Hip:
         print(f"Total center of mass: {total_com}")
 
     def display_length_info(self):
-        left_info = self.left_leg.get_length_info()
-        right_info = self.right_leg.get_length_info()
-        left_spring_info = self.left_leg.get_length_info('spring')
-        right_spring_info = self.right_leg.get_length_info('spring')
-        left_diff_info = self.left_leg.get_length_info('diff')
-        right_diff_info = self.right_leg.get_length_info('diff')
+        left_info = self.left_leg.getLengthInfo()
+        right_info = self.right_leg.getLengthInfo()
+        left_spring_info = self.left_leg.getLengthInfo('spring')
+        right_spring_info = self.right_leg.getLengthInfo('spring')
+        left_diff_info = self.left_leg.getLengthInfo('diff')
+        right_diff_info = self.right_leg.getLengthInfo('diff')
         return {
             'left': left_info,
             'right': right_info,
