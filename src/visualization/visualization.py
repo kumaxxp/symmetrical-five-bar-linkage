@@ -6,23 +6,22 @@ LENGTH = 350
 class Visualization:
     def __init__(self, canvas):
         self.canvas = canvas
-        self.scale = 0.7
         self.offset_x = 0
         self.offset_y = 0
         self.grid_items = []
         self.kinematics_items = {'left': {}, 'right': {}}
         self.scale = 1  # スケールを初期化
-
-
+        self.offset_y_ratio = 3/4   # 3:1の割合にするためY+を定義
+        
     def draw_transformed_kinematics(self, hip):
         self.canvas.delete("all")
         canvas_width = self.canvas.winfo_width()
         canvas_height = self.canvas.winfo_height()
+        
+        # Y方向のオフセットを3:1に調整
         new_offset_x = canvas_width / 2
-        new_offset_y = canvas_height / 2
+        new_offset_y = canvas_height * self.offset_y_ratio
 
-        ## オフセットが変更された場合、またはグリッドがまだ描画されていない場合、グリッドを描画
-        #if new_offset_x != self.offset_x or new_offset_y != self.offset_y or not self.grid_items:
         self.offset_x = new_offset_x
         self.offset_y = new_offset_y
         self.scale = 1  # スケールを設定
@@ -51,11 +50,16 @@ class Visualization:
             item_id = self.canvas.create_line(self.offset_x + x, 0, self.offset_x + x, canvas_height, fill=grid_color)
             self.grid_items.append(item_id)
 
-        # 横線を描画
-        for y in range(int(0), int(canvas_height/2), grid_spacing):
-            item_id = self.canvas.create_line(0, self.offset_y - y, canvas_width, self.offset_y - y, fill=grid_color)
-            self.grid_items.append(item_id)
+        # 横線を描画(Y軸-側)
+        diff_offset_y_ratio = 1.0 - self.offset_y_ratio
+        for y in range(int(0), int(canvas_height*diff_offset_y_ratio), grid_spacing):
             item_id = self.canvas.create_line(0, self.offset_y + y, canvas_width, self.offset_y + y, fill=grid_color)
+            self.grid_items.append(item_id)
+
+        # 横線を描画(Y軸+側)
+        diff_offset_y_ratio = 1.0 - self.offset_y_ratio
+        for y in range(int(0), int(canvas_height*self.offset_y_ratio), grid_spacing):
+            item_id = self.canvas.create_line(0, self.offset_y - y, canvas_width, self.offset_y - y, fill=grid_color)
             self.grid_items.append(item_id)
 
         # X軸とY軸を描画（少し濃い色で）
@@ -99,6 +103,10 @@ class Visualization:
         self.draw_center_of_mass(hip)
 
     def draw_center_of_mass(self, hip):
+        """
+        重心位置を描画し、重心位置からX=0の直線に直角に交わる点線を描画する
+        :param hip: Hipオブジェクト
+        """
         if hip.left_com is not None:
             self.draw_point(hip.left_com, 'blue', 8, "Left CoM")
         if hip.right_com is not None:
