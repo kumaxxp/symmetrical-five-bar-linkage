@@ -1,6 +1,8 @@
 import math
 import numpy as np
 
+LENGTH = 350
+
 class Visualization:
     def __init__(self, canvas):
         self.canvas = canvas
@@ -107,12 +109,16 @@ class Visualization:
 
     def draw_perpendicular_line(self, com):
         """
-        重心位置からX=0の直線に直角に交わる点線を描画する
+        重心位置からX=0の直線に直角に交わる点線を描画し、定義した長さの位置に点をプロットする
         :param com: 重心位置 (x, y)
         """
         x, y = self.transform_point(com)
         canvas_height = self.canvas.winfo_height()
         self.canvas.create_line(x, y, x, canvas_height, fill='gray', dash=(4, 4))
+
+        # 定義した長さの位置に点をプロット
+        point_y = y + LENGTH
+        self.canvas.create_oval(x-5, point_y-5, x+5, point_y+5, fill='red')
     
     def draw_point(self, point, color, size, label):
         x, y = self.transform_point(point)
