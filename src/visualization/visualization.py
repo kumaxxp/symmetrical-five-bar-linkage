@@ -9,6 +9,8 @@ class Visualization:
         self.offset_y = 0
         self.grid_items = []
         self.kinematics_items = {'left': {}, 'right': {}}
+        self.scale = 1  # スケールを初期化
+
 
     def draw_transformed_kinematics(self, hip):
         self.canvas.delete("all")
@@ -21,8 +23,9 @@ class Visualization:
         #if new_offset_x != self.offset_x or new_offset_y != self.offset_y or not self.grid_items:
         self.offset_x = new_offset_x
         self.offset_y = new_offset_y
-        self.redraw_grid()
+        self.scale = 1  # スケールを設定
 
+        self.redraw_grid()
         self.draw_kinematics(hip)
 
     def redraw_grid(self):
@@ -100,7 +103,17 @@ class Visualization:
             self.draw_point(hip.right_com, 'red', 8, "Right CoM")
         if hip.center_com is not None:
             self.draw_point(hip.center_com, 'green', 10, "Total CoM")
+            self.draw_perpendicular_line(hip.center_com)
 
+    def draw_perpendicular_line(self, com):
+        """
+        重心位置からX=0の直線に直角に交わる点線を描画する
+        :param com: 重心位置 (x, y)
+        """
+        x, y = self.transform_point(com)
+        canvas_height = self.canvas.winfo_height()
+        self.canvas.create_line(x, y, x, canvas_height, fill='gray', dash=(4, 4))
+    
     def draw_point(self, point, color, size, label):
         x, y = self.transform_point(point)
         self.canvas.create_oval(x-size, y-size, x+size, y+size, fill='', outline=color, width = 2)
@@ -161,9 +174,16 @@ class Visualization:
                 
                 self.canvas.create_oval(x-5, y-5, x+5, y+5, fill=color)
 
-
     def transform_point(self, point):
-        return (point[0] * self.scale + self.offset_x, -point[1] * self.scale + self.offset_y)
+        """
+        座標をキャンバス上の座標に変換する
+        :param point: 座標 (x, y)
+        :return: キャンバス上の座標 (x, y)
+        """
+        x, y = point
+        transformed_x = self.offset_x + x * self.scale
+        transformed_y = self.offset_y - y * self.scale
+        return transformed_x, transformed_y
 
     def lighten_color(self, color, amount=150):
         color_code = self.canvas.winfo_rgb(color)
