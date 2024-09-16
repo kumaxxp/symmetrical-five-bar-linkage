@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from typing import Tuple, Optional
 
 LENGTH = 350
 
@@ -133,10 +134,35 @@ class Visualization:
         self.canvas.create_oval(x-size, y-size, x+size, y+size, fill='', outline=color, width = 2)
         # self.canvas.create_text(x, y-15, text=label, fill=color)
 
+    def draw_arc(self, center: Tuple[float, float], P1: Tuple[float, float], P2: Tuple[float, float], r: float, color: str):
+        """
+        円の中心点からP1, P2を通る弧を描画します。
+        """
+        x0, y0 = center
+        x1, y1 = P1
+        x2, y2 = P2
+
+        # 角度の計算
+        angle2 = -math.degrees(math.atan2(y1 - y0, x1 - x0))
+        angle1 = -math.degrees(math.atan2(y2 - y0, x2 - x0))
+
+        # Tkinterのcreate_arcは開始角度が右方向（0度）から反時計回り
+        # 弧の範囲を決定
+        start = angle1
+        extent = angle2 - angle1
+        if extent <= 0:
+            extent += 360
+
+        self.canvas.create_arc(
+            x0 - r, y0 + r, x0 + r, y0 - r,
+            start=start, extent=extent, outline=color, width=2 , style="arc"
+        )
+
     def update_links(self, points, leg):
         # リンクの表示
         for start, end, color in [('B1', 'M1', 'red'), ('M1', 'X', 'blue'), ('X', 'M2', 'green'),
-                                  ('M2', 'B2', 'yellow'), ('X', 'E', 'magenta'), ('E', 'F', 'cyan')]:
+                                  ('M2', 'B2', 'yellow'), ('X', 'E', 'magenta'), ('E', 'F', 'cyan'),
+                                  ('E', 'H', 'red'), ('F', 'I', 'red')]:
             if points[start] is not None and points[end] is not None:
                 x1, y1 = self.transform_point(points[start])
                 x2, y2 = self.transform_point(points[end])
@@ -147,6 +173,7 @@ class Visualization:
                     link_width = 4
                 self.canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width)
 
+        """
         # ワイヤーの表示
         for start, end, color in [('W1', 'W11', 'black'), ('W11', 'W12', 'blue'), 
                                   ('W2', 'W21', 'black'), ('W21', 'W22', 'blue'),
@@ -158,6 +185,21 @@ class Visualization:
                     color = self.lighten_color(color, amount=150)
                 link_width = 2
                 self.canvas.create_line(x1, y1, x2, y2, fill=color, width=link_width, dash=(4, 4))
+        """
+
+        # 円弧の表示
+        ptG = self.transform_point(points['G'])
+        ptE = self.transform_point(points['E'])
+        ptF = self.transform_point(points['F'])
+
+        color = 'red'
+        if leg == 'right':
+            color = self.lighten_color(color, amount=150)
+            link_width = 2
+        else:
+            link_width = 4
+
+        self.draw_arc(ptG, ptF, ptE, r = 500 , color = color)
 
             #    key = f"{start}-{end}"
             #    if key in self.kinematics_items[leg]:

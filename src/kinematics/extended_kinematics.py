@@ -4,6 +4,156 @@ import matplotlib.pyplot as plt
 from kinematics.linkage_kinematics import ForwardKinematics
 from kinematics.transformation import Transformation2D
 
+import math
+from typing import Tuple, Optional, Union
+
+def calculate_perpendicular_points(
+    G: Union[Tuple[float, float], np.ndarray],
+    E: Union[Tuple[float, float], np.ndarray],
+    h: float
+) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    """
+    GからEへの直線と直角で交わり、Eを交点とする直線上にあり、Eからの距離がhである2つの点を計算する
+
+    :param G: Gの座標 (x, y)
+    :param E: Eの座標 (x, y)
+    :param h: Eからの距離
+    :return: hだけ離れた2つの点の座標 ((x1, y1), (x2, y2))
+    """
+    # GからEへのベクトルを計算
+    GE = np.array(E) - np.array(G)
+
+    # ベクトルの長さを計算
+    length = np.linalg.norm(GE)
+
+    # ベクトルを正規化（単位ベクトルにする）
+    if length != 0:
+        unit_GE = GE / length
+    else:
+        return (E, E)  # GとEが同じ点の場合、Eを返す
+
+    # 直角なベクトルを計算
+    perpendicular_vector1 = np.array([-unit_GE[1], unit_GE[0]])
+    perpendicular_vector2 = np.array([unit_GE[1], -unit_GE[0]])
+
+    # hだけ離れた2つの点を計算
+    point1 = (E[0] + h * perpendicular_vector1[0], E[1] + h * perpendicular_vector1[1])
+    point2 = (E[0] + h * perpendicular_vector2[0], E[1] + h * perpendicular_vector2[1])
+
+    return (point1, point2)
+
+def find_farthest_combination(
+    H1: Tuple[float, float],
+    H2: Tuple[float, float],
+    I1: Tuple[float, float],
+    I2: Tuple[float, float]
+) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    """
+    H1からI1およびI2との距離、H2からI1およびI2との距離の組み合わせをチェックし、一番遠い組み合わせを計算する
+
+    :param H1: H1の座標 (x, y)
+    :param H2: H2の座標 (x, y)
+    :param I1: I1の座標 (x, y)
+    :param I2: I2の座標 (x, y)
+    :return: 一番遠い組み合わせの座標 ((H, I), (H, I))
+    """
+    def distance(p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
+        return np.linalg.norm(np.array(p1) - np.array(p2))
+
+    combinations = [
+        (H1, I1),
+        (H1, I2),
+        (H2, I1),
+        (H2, I2)
+    ]
+
+    max_distance = 0
+    farthest_combination = (H1, I1)
+
+    for (H, I) in combinations:
+        dist = distance(H, I)
+        if dist > max_distance:
+            max_distance = dist
+            farthest_combination = (H, I)
+
+    return farthest_combination
+
+def find_circle_centers(
+    P1: Tuple[float, float],
+    P2: Tuple[float, float],
+    P3: Tuple[float, float],
+    r: float
+) -> Optional[Tuple[Tuple[float, float], Tuple[float, float]]]:
+    """
+    2つの点P1, P2と半径rから、円の中心点C1, C2を計算して返します。
+    
+    Args:
+        P1 (Tuple[float, float]): 点P1の座標 (x1, y1)
+        P2 (Tuple[float, float]): 点P2の座標 (x2, y2)
+        r (float): 円の半径
+    
+    Returns:
+        Optional[Tuple[Tuple[float, float], Tuple[float, float]]]:
+            中心点C1とC2の座標を含むタプル。条件を満たさない場合はNoneを返す。
+    
+    Raises:
+        ValueError: 半径rが正でない場合、または2点間の距離が2rを超える場合に発生。
+    """
+    x1, y1 = P1
+    x2, y2 = P2
+    x3, y3 = P3
+
+    # 2点間の距離dを計算
+    dx = x2 - x1
+    dy = y2 - y1
+    d_sq = dx**2 + dy**2
+    d = math.sqrt(d_sq)
+
+    # 半径rが正であることを確認
+    if r <= 0:
+        raise ValueError("半径rは正の値でなければなりません。")
+
+    # 2点間の距離が2rを超える場合、条件を満たす円は存在しない
+    if d > 2 * r:
+        raise ValueError("2点間の距離が2rを超えているため、条件を満たす円は存在しません。")
+
+    # 中点Mの座標を計算
+    mx = (x1 + x2) / 2
+    my = (y1 + y2) / 2
+
+    # 中点から中心までの距離hを計算
+    # h^2 = r^2 - (d/2)^2
+    h_sq = r**2 - (d / 2)**2
+    # 数値誤差のため、h_sqが微小な負数になっていないか確認
+    if h_sq < 0:
+        h_sq = 0
+    h = math.sqrt(h_sq)
+
+    # 単位垂直ベクトルを計算
+    if d == 0:
+        # P1とP2が同一の場合、無限に多くの中心が存在する
+        raise ValueError("点P1とP2が同一であるため、中心を一意に決定できません。")
+    
+    # 垂直方向の単位ベクトル (−dy/d, dx/d)
+    ux = -dy / d
+    uy = dx / d
+
+    # 中心点C1とC2を計算
+    C1 = (mx + h * ux, my + h * uy)
+    C2 = (mx - h * ux, my - h * uy)
+
+    # C1,C2のうち、P3に距離が近いものを選択
+    # P3からC1, C2への距離を計算
+    dist_C1 = math.sqrt((C1[0] - x3)**2 + (C1[1] - y3)**2)
+    dist_C2 = math.sqrt((C2[0] - x3)**2 + (C2[1] - y3)**2)
+
+    # P3に距離が近い中心点を返す
+    if dist_C1 < dist_C2:
+        return C1
+    else:
+        return C2 
+
+
 def calculateHardPoint(P1, P2, shift = 0):
     """
     P1-P2の直線上で、P1からshiftの距離にある点を計算する
@@ -133,6 +283,13 @@ class ExtendedKinematics(ForwardKinematics):
         self.theta1 = 0
         self.theta2 = 0
 
+        self.Rfe = 500  # F-Eの足の扇型の半径
+        self.G = None
+        self.H = None
+        self.I = None
+        self.h = 100
+        self.i = 200
+
     def setAngles(self, theta1, theta2, thetaF):
         """
         モーターの角度設定
@@ -151,6 +308,12 @@ class ExtendedKinematics(ForwardKinematics):
         """
         super().computeForwardKinematics()
         self.F = self.calculateF()
+
+        self.G = find_circle_centers(self.E, self.F, self.B1, self.Rfe)     # 点EFを始点終点とする円弧を描く
+        H1,H2 = calculate_perpendicular_points(self.G, self.E, self.h)      # 円弧から延びる直線を描き、つま先とかかとにする
+        I1,I2 = calculate_perpendicular_points(self.G, self.F, self.i)      #  点E,Fから延びる接線を計算し、点H,Iを求める
+        self.H, self.I = find_farthest_combination(H1,H2,I1,I2)             #  H,Iの距離が最も遠い組み合わせを選択する
+        
         self.W11 = calculateWirePoint(self.B1, self.M1, self.w, 'left')
         self.W21 = calculateWirePoint(self.B2, self.M2, self.w, 'right')
 
@@ -229,8 +392,10 @@ class ExtendedKinematics(ForwardKinematics):
             "W31": self.W31,
             "W32": self.W32,
             "W41": self.W41,
-            "W42": self.W42
-
+            "W42": self.W42,
+            "G":   self.G,
+            "H":   self.H,
+            "I":   self.I
         }
     
     def getLengthInfo(self, cmd = 'default'):
