@@ -288,7 +288,7 @@ class ExtendedKinematics(ForwardKinematics):
         self.H = None
         self.I = None
         self.h = 100
-        self.i = 200
+        self.i = 100
 
     def setAngles(self, theta1, theta2, thetaF):
         """

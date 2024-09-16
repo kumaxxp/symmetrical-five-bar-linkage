@@ -5,6 +5,7 @@ class GUI:
     def __init__(self, master):
         self.master = master
         self.setup_ui()
+        self.setup_option_buttons()
 
     def setup_ui(self):
         self.setup_frames()
@@ -43,9 +44,23 @@ class GUI:
                 value_label.pack(side=tk.RIGHT)
                 self.angle_labels[leg][angle] = value_label
 
+    def setup_option_buttons(self):
+        self.option_var = tk.StringVar(value="ground")
+        option_frame = ttk.LabelFrame(self.master, text="Rotation Option")
+        option_frame.pack(fill=tk.X, padx=5, pady=5)
+
+        ground_option = ttk.Radiobutton(option_frame, text="Ground", variable=self.option_var, value="ground")
+        ground_option.pack(side=tk.LEFT, padx=5, pady=5)
+
+        toe_option = ttk.Radiobutton(option_frame, text="Toe", variable=self.option_var, value="toe")
+        toe_option.pack(side=tk.LEFT, padx=5, pady=5)
+
     def setup_canvas(self):
         self.canvas = tk.Canvas(self.right_frame, bg='white')
         self.canvas.pack(fill=tk.BOTH, expand=True)
+
+    def get_rotation_option(self):
+        return self.option_var.get()
 
     def on_slider_change(self, leg, angle):
         value = self.sliders[leg][angle].get()

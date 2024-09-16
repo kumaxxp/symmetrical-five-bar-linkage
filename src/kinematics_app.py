@@ -155,8 +155,9 @@ class KinematicsApp(tk.Tk):
         # スライダコントロールの値に沿って、リンクの基本形状を計算する
         self.hip.compute_forward_kinematics()
 
-        # 左脚を基準に回転
-        self.hip.align_legs_to_ground()
+        # 回転オプションを取得して脚を地面に合わせる
+        rotation_option = self.gui.get_rotation_option()
+        self.hip.align_legs_to_ground(rotation_option)  # 左脚を基準に回転
 
         # 重心を計算する
         self.hip.calculate_total_center_of_mass()

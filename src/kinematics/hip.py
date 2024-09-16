@@ -90,12 +90,16 @@ class Hip:
 
         self.center_com = weighted_sum / total_weight
 
-    def align_legs_to_ground(self):
+    def align_legs_to_ground(self, rotation_option):
         left_points = self.left_leg.getOriginalPoints()
         right_points = self.right_leg.getOriginalPoints()
 
-        # 左脚を地面に合わせて回転
-        self.left_leg.calculateRotatedPoints(left_points['E'], left_points['F'], (0, 0), (1, 0))
+        if rotation_option == "ground":
+            # 左脚を地面に合わせて回転
+            self.left_leg.calculateRotatedPoints(left_points['E'], left_points['F'], (0, 0), (1, 0))
+        elif rotation_option == "toe":
+            # つま先側を地面に合わせて回転
+            self.left_leg.calculateRotatedPoints(left_points['F'], left_points['I'], (0, 0), (1, 0))
 
         # 回転後の左脚のB1, B2の位置を取得
         rotated_left_points = self.left_leg.getRotatedPoints()
