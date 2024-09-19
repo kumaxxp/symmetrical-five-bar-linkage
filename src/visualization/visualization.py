@@ -199,7 +199,7 @@ class Visualization:
         else:
             link_width = 4
 
-        self.draw_arc(ptG, ptF, ptE, r = 500 , color = color)
+        self.draw_arc(ptG, ptF, ptE, r = 700 , color = color)
 
             #    key = f"{start}-{end}"
             #    if key in self.kinematics_items[leg]:

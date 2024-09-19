@@ -283,7 +283,7 @@ class ExtendedKinematics(ForwardKinematics):
         self.theta1 = 0
         self.theta2 = 0
 
-        self.Rfe = 500  # F-Eの足の扇型の半径
+        self.Rfe = 700  # F-Eの足の扇型の半径
         self.G = None
         self.H = None
         self.I = None
