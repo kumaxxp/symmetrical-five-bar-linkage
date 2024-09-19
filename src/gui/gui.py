@@ -49,11 +49,14 @@ class GUI:
         option_frame = ttk.LabelFrame(self.master, text="Rotation Option")
         option_frame.pack(fill=tk.X, padx=5, pady=5)
 
-        ground_option = ttk.Radiobutton(option_frame, text="Ground", variable=self.option_var, value="ground")
+        ground_option = ttk.Radiobutton(option_frame, text="Ground", variable=self.option_var, value="ground", command=self.on_option_change)
         ground_option.pack(side=tk.LEFT, padx=5, pady=5)
 
-        toe_option = ttk.Radiobutton(option_frame, text="Toe", variable=self.option_var, value="toe")
+        toe_option = ttk.Radiobutton(option_frame, text="Toe", variable=self.option_var, value="toe", command=self.on_option_change)
         toe_option.pack(side=tk.LEFT, padx=5, pady=5)
+
+        heel_option = ttk.Radiobutton(option_frame, text="Heel", variable=self.option_var, value="heel", command=self.on_option_change)
+        heel_option.pack(side=tk.LEFT, padx=5, pady=5)
 
     def setup_canvas(self):
         self.canvas = tk.Canvas(self.right_frame, bg='white')
@@ -66,7 +69,9 @@ class GUI:
         value = self.sliders[leg][angle].get()
         self.angle_labels[leg][angle].config(text=f"{value:.1f}")
         self.master.update_plot()
-#        self.display_length_info()
+
+    def on_option_change(self):
+        self.master.update_plot()        
 
     def setup_button(self):
         self.range_check_button = ttk.Button(self.left_frame, text="Check Range", command=self.on_range_check)

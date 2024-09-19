@@ -100,6 +100,9 @@ class Hip:
         elif rotation_option == "toe":
             # つま先側を地面に合わせて回転
             self.left_leg.calculateRotatedPoints(left_points['F'], left_points['I'], (0, 0), (1, 0))
+        elif rotation_option == "heel":
+            # かかと側を地面に合わせて回転
+            self.left_leg.calculateRotatedPoints(left_points['H'], left_points['E'], (0, 0), (1, 0))
 
         # 回転後の左脚のB1, B2の位置を取得
         rotated_left_points = self.left_leg.getRotatedPoints()
