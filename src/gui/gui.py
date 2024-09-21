@@ -14,6 +14,7 @@ class GUI:
         self.setup_button()
         self.setup_text()
 
+
     def setup_frames(self):
         self.main_frame = ttk.Frame(self.master)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
@@ -79,8 +80,12 @@ class GUI:
 
     def setup_text(self):
         # 長さ情報を表示するためのテキストウィジェットを追加
-        self.length_info_text = tk.Text(self.left_frame, height=40, width=60)
-        self.length_info_text.pack(side=tk.BOTTOM, padx=10, pady=10)    
+        self.length_info_text = tk.Text(self.left_frame, height=20, width=60)
+        self.length_info_text.pack(side=tk.BOTTOM, padx=10, pady=10)
+
+        # リンク情報を表示するためのテキストウィジェットを追加
+        self.links_info_text = tk.Text(self.left_frame, height=20, width=60)
+        self.links_info_text.pack(side=tk.BOTTOM, padx=10, pady=10)
 
     def on_range_check(self):
         # kinematics_app.pyの範囲確認メソッドを呼び出す
@@ -100,3 +105,12 @@ class GUI:
                 for key, value in leg_info.items():
                     self.length_info_text.insert(tk.END, f"{key}: {value:.2f}\n")
                 self.length_info_text.insert(tk.END, "\n")
+
+    def update_links_info(self, links_info):
+        # リンクの情報を表示するためのロジックを実装
+        self.links_info_text.delete('1.0', tk.END)  # テキストをクリア
+        for leg, info in links_info.items():
+            self.links_info_text.insert(tk.END, f"{leg.capitalize()}:\n")
+            for key, value in info.items():
+                self.links_info_text.insert(tk.END, f"{key}: {value:.2f}\n")
+            self.links_info_text.insert(tk.END, "\n")

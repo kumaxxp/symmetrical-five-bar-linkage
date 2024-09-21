@@ -83,7 +83,7 @@ def find_circle_centers(
     P2: Tuple[float, float],
     P3: Tuple[float, float],
     r: float
-) -> Optional[Tuple[float, float]]:
+) -> Optional[Tuple[Tuple[float, float], float]]:
     """
     2つの点P1, P2と半径rから、円の中心点C1, C2を計算して返します。
     
@@ -94,8 +94,8 @@ def find_circle_centers(
         r (float): 円の半径
     
     Returns:
-        Optional[Tuple[float, float]]:
-            P3に最も近い中心点C1またはC2の座標を含むタプル。条件を満たさない場合はNoneを返す。
+        Optional[Tuple[Tuple[float, float], float]]:
+            P3に最も近い中心点C1またはC2の座標と、P1, P2と中心点の間の角度を含むタプル。条件を満たさない場合はNoneを返す。
     
     Raises:
         ValueError: 半径rが正でない場合、または2点間の距離が2rを超える場合に発生。
@@ -105,18 +105,15 @@ def find_circle_centers(
     x3, y3 = P3
 
     # 2点間の距離dを計算
-    dx = x2 - x1
-    dy = y2 - y1
-    d_sq = dx**2 + dy**2
-    d = math.sqrt(d_sq)
-
+    dx, dy = x2 - x1, y2 - y1
+    d = math.sqrt(dx**2 + dy**2)
     # 半径rが正であることを確認
     if r <= 0:
         raise ValueError("半径rは正の値でなければなりません。")
 
     # 2点間の距離が2rを超える場合、条件を満たす円は存在しない
     if d > 2 * r:
-        raise ValueError("2点間の距離が2rを超えているため、条件を満たす円は存在しません。")
+        raise ValueError("2点間の距離が2rを超えています。")
 
     # 中点Mの座標を計算
     mx = (x1 + x2) / 2
@@ -162,12 +159,8 @@ def find_circle_centers(
     magnitude_v2 = math.sqrt(v2[0]**2 + v2[1]**2)
     angle = math.acos(dot_product / (magnitude_v1 * magnitude_v2))
     angle_degrees = math.degrees(angle)
-
-    # デバッグ情報をprint
-#    print(f"Selected center: {selected_center}")
-#    print(f"Angle between P1, P2 and the center: {angle_degrees:.2f} degrees")
-
-    return selected_center
+    
+    return selected_center, angle_degrees
 
 def calculateHardPoint(P1, P2, shift = 0):
     """
@@ -304,6 +297,7 @@ class ExtendedKinematics(ForwardKinematics):
         self.I = None
         self.h = 100
         self.i = 100
+        self.arc_angle_fe = 0.0  # F-Eの足の扇形の角度
 
     def setAngles(self, theta1, theta2, thetaF):
         """
@@ -324,7 +318,7 @@ class ExtendedKinematics(ForwardKinematics):
         super().computeForwardKinematics()
         self.F = self.calculateF()
 
-        self.G = find_circle_centers(self.E, self.F, self.B1, self.Rfe)     # 点EFを始点終点とする円弧を描く
+        self.G, self.arc_angle_fe = find_circle_centers(self.E, self.F, self.B1, self.Rfe)     # 点EFを始点終点とする円弧を描く
         H1,H2 = calculate_perpendicular_points(self.G, self.E, self.h)      # 円弧から延びる直線を描き、つま先とかかとにする
         I1,I2 = calculate_perpendicular_points(self.G, self.F, self.i)      #  点E,Fから延びる接線を計算し、点H,Iを求める
         self.H, self.I = find_farthest_combination(H1,H2,I1,I2)             #  H,Iの距離が最も遠い組み合わせを選択する
@@ -412,6 +406,20 @@ class ExtendedKinematics(ForwardKinematics):
             "H":   self.H,
             "I":   self.I
         }
+
+    def get_links_info(self):
+        # リンクの長さ情報を取得するロジックを実装
+        links_info = {
+            'b': self.b,
+            'm': self.m,
+            'e': self.e,
+            'f': self.f,
+            'Rfe': self.Rfe,
+            'h': self.h,
+            'i': self.i,
+            'arc_angle_fe': self.arc_angle_fe
+        }
+        return links_info
     
     def getLengthInfo(self, cmd = 'default'):
         """

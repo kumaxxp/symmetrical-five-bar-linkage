@@ -174,7 +174,6 @@ class KinematicsApp(tk.Tk):
         links_info = self.hip.get_links_info()
         self.gui.update_links_info(links_info)
 
-
         self.visualization.draw_transformed_kinematics(self.hip)
         self.gui.canvas.update()
 

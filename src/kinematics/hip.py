@@ -12,6 +12,14 @@ class Hip:
         self.left_com = None
         self.right_com = None
 
+    def get_links_info(self):
+        # リンクの情報を取得するロジックを実装
+        links_info = {
+            'left_leg': self.left_leg.get_links_info(),
+            'right_leg': self.right_leg.get_links_info()
+        }
+        return links_info
+
     def set_leg_param(self, b, m, e, f, B1, B2, W1, W2, w):
         """
         両足のパラメータを設定する
