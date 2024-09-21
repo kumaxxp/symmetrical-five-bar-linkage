@@ -95,9 +95,13 @@ class Visualization:
                 self.grid_items.append(item_id)
 
     def draw_kinematics(self, hip):
+
+        # ExtendedKinematicsから足底の扇型を取得
+        arc = hip.left_leg.Rfe
+
         rotated_points = hip.get_rotated_points()
         for leg in ['left', 'right']:
-            self.update_links(rotated_points[leg], leg)
+            self.update_links(rotated_points[leg], arc, leg)
             self.update_points(rotated_points[leg], leg)
 
         # 重心の計算と描画
@@ -158,7 +162,7 @@ class Visualization:
             start=start, extent=extent, outline=color, width=2 , style="arc"
         )
 
-    def update_links(self, points, leg):
+    def update_links(self, points, arc, leg):
         # リンクの表示
         for start, end, color in [('B1', 'M1', 'red'), ('M1', 'X', 'blue'), ('X', 'M2', 'green'),
                                   ('M2', 'B2', 'yellow'), ('X', 'E', 'magenta'), ('E', 'F', 'cyan'),
@@ -199,7 +203,7 @@ class Visualization:
         else:
             link_width = 4
 
-        self.draw_arc(ptG, ptF, ptE, r = 700 , color = color)
+        self.draw_arc(ptG, ptF, ptE, r = arc , color = color)
 
             #    key = f"{start}-{end}"
             #    if key in self.kinematics_items[leg]:

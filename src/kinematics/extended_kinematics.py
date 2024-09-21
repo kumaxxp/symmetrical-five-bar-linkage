@@ -83,18 +83,19 @@ def find_circle_centers(
     P2: Tuple[float, float],
     P3: Tuple[float, float],
     r: float
-) -> Optional[Tuple[Tuple[float, float], Tuple[float, float]]]:
+) -> Optional[Tuple[float, float]]:
     """
     2つの点P1, P2と半径rから、円の中心点C1, C2を計算して返します。
     
     Args:
         P1 (Tuple[float, float]): 点P1の座標 (x1, y1)
         P2 (Tuple[float, float]): 点P2の座標 (x2, y2)
+        P3 (Tuple[float, float]): 点P3の座標 (x3, y3)
         r (float): 円の半径
     
     Returns:
-        Optional[Tuple[Tuple[float, float], Tuple[float, float]]]:
-            中心点C1とC2の座標を含むタプル。条件を満たさない場合はNoneを返す。
+        Optional[Tuple[float, float]]:
+            P3に最も近い中心点C1またはC2の座標を含むタプル。条件を満たさない場合はNoneを返す。
     
     Raises:
         ValueError: 半径rが正でない場合、または2点間の距離が2rを超える場合に発生。
@@ -147,12 +148,26 @@ def find_circle_centers(
     dist_C1 = math.sqrt((C1[0] - x3)**2 + (C1[1] - y3)**2)
     dist_C2 = math.sqrt((C2[0] - x3)**2 + (C2[1] - y3)**2)
 
-    # P3に距離が近い中心点を返す
+    # P3に距離が近い中心点を選択
     if dist_C1 < dist_C2:
-        return C1
+        selected_center = C1
     else:
-        return C2 
+        selected_center = C2
 
+    # 角度を計算
+    v1 = (x1 - selected_center[0], y1 - selected_center[1])
+    v2 = (x2 - selected_center[0], y2 - selected_center[1])
+    dot_product = v1[0] * v2[0] + v1[1] * v2[1]
+    magnitude_v1 = math.sqrt(v1[0]**2 + v1[1]**2)
+    magnitude_v2 = math.sqrt(v2[0]**2 + v2[1]**2)
+    angle = math.acos(dot_product / (magnitude_v1 * magnitude_v2))
+    angle_degrees = math.degrees(angle)
+
+    # デバッグ情報をprint
+#    print(f"Selected center: {selected_center}")
+#    print(f"Angle between P1, P2 and the center: {angle_degrees:.2f} degrees")
+
+    return selected_center
 
 def calculateHardPoint(P1, P2, shift = 0):
     """

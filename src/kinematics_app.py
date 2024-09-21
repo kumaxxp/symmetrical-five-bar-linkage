@@ -120,7 +120,7 @@ class KinematicsApp(tk.Tk):
         B2 = (-50, -100 + 200)
         W1 = (70, -100 + 200)
         W2 = (-70, -100 + 200)
-        self.hip.set_leg_param(150, 200, 150, 150, B1, B2, W1, W2, 20)
+        self.hip.set_leg_param(b=150, m=200, e=150, f=150, B1=B1, B2=B2, W1=W1, W2=W2, w=20)
         #self.hip.set_weights({'B1': 1, 'B2': 1, 'E': 1})
         self.hip.set_weights({'B1': 1, 'B2': 1})
 
@@ -168,6 +168,12 @@ class KinematicsApp(tk.Tk):
 
         # GUIに長さ情報を反映
         self.gui.update_length_info(length_info)        
+
+        # GUIにリンクの情報を反映
+        # 長さや足底の扇の角度など、simscapeで必要な情報を出力
+        links_info = self.hip.get_links_info()
+        self.gui.update_links_info(links_info)
+
 
         self.visualization.draw_transformed_kinematics(self.hip)
         self.gui.canvas.update()
