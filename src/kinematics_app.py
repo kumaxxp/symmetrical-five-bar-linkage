@@ -120,13 +120,13 @@ class KinematicsApp(tk.Tk):
         B2 = (-50, -100 + 200)
         W1 = (70, -100 + 200)
         W2 = (-70, -100 + 200)
-        self.hip.set_leg_param(b=150, m=200, e=150, f=150, B1=B1, B2=B2, W1=W1, W2=W2, w=20)
+        self.hip.set_leg_param(b=200, m=250, e=200, f=200, B1=B1, B2=B2, W1=W1, W2=W2, w=20)
         #self.hip.set_weights({'B1': 1, 'B2': 1, 'E': 1})
         self.hip.set_weights({'B1': 1, 'B2': 1})
 
         self.initial_angles = {
-            'left': {'theta1': -50, 'theta2': -120, 'thetaF': -60},
-            'right': {'theta1': -50, 'theta2': -120, 'thetaF': -60}
+            'left': {'theta1': -70, 'theta2': -120, 'thetaF': -60},
+            'right': {'theta1': -70, 'theta2': -120, 'thetaF': -60}
         }
 
     def set_initial_angles(self):
